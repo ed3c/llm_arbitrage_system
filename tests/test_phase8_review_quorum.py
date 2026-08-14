@@ -419,7 +419,7 @@ def test_build_review_quorum_binds_verified_review_evidence(
             record=SimpleNamespace(
                 reviewer=SimpleNamespace(subject=f"reviewer-{index}"),
                 reviewed_at=SimpleNamespace(
-                    isoformat=lambda timespec: f"2026-08-{15 + index:02d}T00:00:00+00:00"
+                    isoformat=lambda timespec, stamp=f"2026-08-{15 + index:02d}T00:00:00+00:00": stamp
                 ),
             ),
         )

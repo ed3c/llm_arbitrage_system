@@ -211,12 +211,12 @@ def _dispatch(arguments: argparse.Namespace) -> dict[str, Any]:
             force=bool(arguments.force),
         )
         payload = _object(document.get("payload"), "review quorum signer payload")
-        envelope = _object(payload.get("envelope"), "review quorum identity")
+        envelope_identity = _object(payload.get("envelope"), "review quorum identity")
         return {
             "attestation": str(Path(arguments.output).resolve()),
-            "envelope_id": envelope["envelope_id"],
-            "envelope_sha256": envelope["envelope_sha256"],
-            "status": envelope["status"],
+            "envelope_id": envelope_identity["envelope_id"],
+            "envelope_sha256": envelope_identity["envelope_sha256"],
+            "status": envelope_identity["status"],
             "key_id": payload["key_id"],
             "deployment_authorized": False,
             "trading_authorized": False,
