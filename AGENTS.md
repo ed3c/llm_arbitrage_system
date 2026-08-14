@@ -2,7 +2,7 @@
 
 ## Current phase
 
-Phase 3 adds reproducible, content-addressed experiment orchestration on top of the merged offline paper runtime. Preserve the paper-only boundary and treat datasets, configuration, manifests, SQLite evidence, and checksums as one linked evidence chain.
+Phase 4 adds signed provenance, dataset-lineage DAGs, trusted local registry imports, and matrix-bound test evaluation aggregation on top of Phase 3. Preserve the credential-free paper boundary and treat datasets, configuration, manifests, checksums, attestations, lineage, and registry rows as one linked evidence chain.
 
 ## Commands
 
@@ -10,6 +10,7 @@ Phase 3 adds reproducible, content-addressed experiment orchestration on top of 
 python -m pip install -e ".[dev]"
 make check
 make phase3-smoke
+make phase4-smoke
 ```
 
 ## State-machine ownership
@@ -17,18 +18,19 @@ make phase3-smoke
 - `domain/`: immutable cross-layer contracts; no I/O.
 - `analytics/`: deterministic feature state keyed by venue and symbol.
 - `simulation/strategy_router.py`: creates paper plans only.
-- `simulation/approval.py`: reserves capacity and reconciles terminal results.
+- `simulation/approval.py`: reserves capacity and reconciles results.
 - `simulation/executor.py`: deterministic fills and compensation; no network path.
-- `simulation/pipeline.py`: bounded queues, lifecycle, cancellation, and stage ordering.
-- `storage/sqlite_journal.py`: append-only local evidence and replay-run status.
-- `reporting/performance.py`: evidence-supported metrics and explicit withheld claims.
-- `experiments/dataset.py`: strict schema-v1 JSONL validation and semantic dataset hashes.
-- `experiments/config.py`: strict schema-v1 behavior configuration and canonical hashes.
-- `experiments/determinism.py`: evidence-derived plan and leg identifiers.
-- `experiments/manifest.py`: experiment identity and code-revision provenance.
-- `experiments/runner.py`: composition root for one reproducible paper experiment.
-- `experiments/bundle.py`: atomic bundle publication and independent verification.
-- `experiments/walk_forward.py`: bounded parameter grids and train/purge/test plans.
+- `simulation/pipeline.py`: bounded queues, cancellation, and stage ordering.
+- `storage/sqlite_journal.py`: append-only replay evidence and run status.
+- `reporting/performance.py`: evidence-supported metrics and withheld claims.
+- `experiments/dataset.py`: strict JSONL validation and semantic hashes.
+- `experiments/config.py`: strict behavior configuration and canonical hashes.
+- `experiments/bundle*.py`: atomic publication and independent verification.
+- `experiments/signing.py`: Ed25519 provenance keys and detached attestations.
+- `experiments/lineage.py`: content-addressed dataset lineage manifests.
+- `experiments/evaluation.py`: planned test-slice execution and binding record.
+- `experiments/registry.py`: trusted-key allowlist, lineage DAG, immutable imports, and evaluation registration.
+- `experiments/aggregation.py`: cross-window coverage aggregation without winner selection.
 - `experiments/cli.py`: credential-free operator interface.
 
 ## Required invariants
@@ -36,24 +38,21 @@ make phase3-smoke
 - Use timezone-aware timestamps and `Decimal` for prices, amounts, fees, and limits.
 - Keep domain contracts immutable.
 - Reject unknown fields, duplicate JSON/YAML keys, naive timestamps, non-finite values, time reversal, and floating-point monetary inputs.
-- Canonical identity is based on semantic dataset content, canonical behavior configuration, code revision, and package version.
-- Raw source hashes remain evidence, but whitespace and mapping order do not change semantic identity.
-- Operational SQLite timestamps are not part of the experiment identity.
-- Deterministic plan and leg identifiers must derive from input evidence, feature sequence, and plan semantics—not UUID defaults.
-- A pipeline instance is single-use.
-- A run is `completed` only after all queue stages finish and reports persist.
-- A stage failure cancels sibling tasks and marks the journal `aborted`.
-- Persist market events before queue admission, decisions before approval, risk outcomes before execution admission, and execution results before reconciliation.
-- Do not silently overwrite an existing content-addressed bundle.
-- Bundle verification must check the exact file set, SHA-256 values, manifest identity, raw/canonical linkage, event metadata, SQLite integrity, `run_id`, and terminal status.
-- Walk-forward windows must maintain explicit train, purge, and test boundaries. Never train on or select from the test slice.
-- Parameter grids must be deterministic and bounded before expansion.
-- Execution cost is not strategy PnL. Do not populate Sharpe, drawdown, or alpha-decay fields without the evidence required by the reporting contract.
-- Add deterministic tests for every schema, lifecycle, identity, checksum, metric, or state-transition change.
+- Private provenance keys never enter the repository, evidence bundle, journal, registry, logs, or tests.
+- Generate provenance private-key files with mode `0600`; refuse silent overwrite.
+- Attestations remain detached and bind the public key, key ID, signature, experiment/run IDs, manifest digest, checksum digest, bundle root, and optional lineage ID.
+- Registry imports require a trusted public key unless the caller explicitly opts into untrusted evidence.
+- Lineage IDs are content-addressed. Source nodes have no parents; derived/slice nodes require registered parents.
+- A planned evaluation replays only its test slice. Candidate config, train/test hashes, indexes, matrix identity, and evaluation ID must match.
+- Registry experiment and evaluation rows are immutable. Exact duplicate imports may be idempotent; conflicts fail.
+- Aggregation reports coverage and supported execution fields only. It must not select a winner or infer realized PnL, Sharpe, or alpha decay.
+- A pipeline instance is single-use. A run is `completed` only after all stages finish and reports persist.
+- Do not silently overwrite content-addressed bundles, keys, attestations, or registry identities.
+- Add deterministic tests for every schema, identity, signature, lineage, registry, metric, or state transition.
 
 ## Prohibited changes
 
-Do not add private keys, API secrets, seed phrases, withdrawal functions, account access, venue SDKs, external order endpoints, network probes, or a live-mode branch. Do not weaken validation, CI, evidence boundaries, overwrite protection, or bundle verification. Do not claim that content addressing proves authenticity or profitability.
+Do not add exchange private keys, API secrets, seed phrases, withdrawal functions, account access, venue SDKs, external order endpoints, network probes, or a live-mode branch. Do not weaken validation, CI, trust checks, overwrite protection, or evidence boundaries. Do not claim that checksums, signatures, or registry trust prove market truth or profitability.
 
 ## Phase sequence
 
@@ -62,4 +61,5 @@ Phase 1 contracts/analytics
   -> Phase 2 paper runtime
   -> Phase 2B durable evidence/reporting
   -> Phase 3 reproducible experiments
+  -> Phase 4 signed provenance/lineage/OOS registry
 ```
