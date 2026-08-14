@@ -18,6 +18,7 @@ experiment-runs/
 .phase5-runs/
 .phase6-runs/
 .phase7-runs/
+.phase8-runs/
 *.attestation.json
 *.registry.sqlite3
 .DS_Store

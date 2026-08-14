@@ -68,6 +68,8 @@ jobs:
         run: bash scripts/phase6_smoke.sh
       - name: Phase 7 signed selection governance smoke
         run: bash scripts/phase7_smoke.sh
+      - name: Phase 8 separation-of-duties quorum smoke
+        run: bash scripts/phase8_smoke.sh
 
   compatibility:
     name: Python ${{ matrix.python-version }}
