@@ -321,7 +321,7 @@ def _dispatch(arguments: argparse.Namespace) -> dict[str, Any]:
         return campaign_status(arguments.workspace)
     if command == "value-bundle":
         output = _available_output(arguments.output, force=bool(arguments.force))
-        report = value_bundle(
+        valuation_report = value_bundle(
             arguments.bundle,
             arguments.marks,
             code_revision=resolve_code_revision(
@@ -329,12 +329,12 @@ def _dispatch(arguments: argparse.Namespace) -> dict[str, Any]:
                 cwd=Path.cwd(),
             ),
         )
-        write_json(output, report.as_dict())
-        return {"output": str(output), **report.as_dict()}
+        write_json(output, valuation_report.as_dict())
+        return {"output": str(output), **valuation_report.as_dict()}
     if command == "campaign-statistics":
         output = _available_output(arguments.output, force=bool(arguments.force))
         inputs = load_statistics_inputs(arguments.inputs)
-        report = build_oos_statistics(
+        statistics_report = build_oos_statistics(
             registry_path=arguments.registry,
             matrix_path=arguments.matrix,
             candidate_ids=inputs.candidate_ids,
@@ -349,8 +349,8 @@ def _dispatch(arguments: argparse.Namespace) -> dict[str, Any]:
                 cwd=Path.cwd(),
             ),
         )
-        write_json(output, report.as_dict())
-        return {"output": str(output), **report.as_dict()}
+        write_json(output, statistics_report.as_dict())
+        return {"output": str(output), **statistics_report.as_dict()}
     if command == "sign-statistics":
         document = sign_statistics_report(
             arguments.report,
@@ -358,17 +358,17 @@ def _dispatch(arguments: argparse.Namespace) -> dict[str, Any]:
             arguments.output,
             force=bool(arguments.force),
         )
-        payload = document.get("payload")
-        if not isinstance(payload, dict):
+        signing_payload = document.get("payload")
+        if not isinstance(signing_payload, dict):
             raise RuntimeError("statistics signer returned an invalid payload")
-        report_identity = payload.get("report")
+        report_identity = signing_payload.get("report")
         if not isinstance(report_identity, dict):
             raise RuntimeError("statistics signer returned an invalid report identity")
         return {
             "attestation": str(Path(arguments.output).resolve()),
             "report_id": report_identity["report_id"],
             "report_sha256": report_identity["report_sha256"],
-            "key_id": payload["key_id"],
+            "key_id": signing_payload["key_id"],
         }
     if command == "verify-statistics":
         return verify_statistics_attestation(
