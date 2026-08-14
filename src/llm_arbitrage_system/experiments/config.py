@@ -391,7 +391,7 @@ def _integer(payload: Mapping[str, Any], key: str, default: int) -> int:
     value = payload.get(key, default)
     if isinstance(value, bool) or not isinstance(value, int):
         raise ValueError(f"{key} must be an integer")
-    return value
+    return cast(int, value)
 
 
 def _floating(payload: Mapping[str, Any], key: str, default: float) -> float:
