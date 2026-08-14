@@ -1,18 +1,35 @@
 # Implementation status
 
-## Phase 1 in this branch
+## Phase 1 — merged
 
-- typed immutable event and result contracts
-- validated runtime configuration defaults
-- Kaufman and noise analytics
-- memory-backed event and journal abstractions
-- deterministic replay and paper simulation adapters
-- packaging, contributor, and security documentation
+- immutable typed domain contracts
+- validated analytics configuration
+- Kaufman ER/KAMA, rolling Z-score, ATR percentage, and Kalman filtering
+- packaging, contribution, security, and architecture documentation
 
-## Phase 2 implementation artifact
+## Phase 2 and Phase 2B — merged
 
-The local implementation artifact also contains the strategy router, central approval engine, compensated multi-leg simulator, replay metrics, SQLite storage, asyncio orchestration, and a 25-test suite. These modules remain separated from this draft branch until the repository write path accepts the complete reviewed file set.
+- paper-only funding carry, crowding reversion, and RWA lead-lag routing
+- stateful approval, capacity reservation, and terminal reconciliation
+- deterministic multi-leg simulation and partial-outcome compensation
+- bounded asyncio orchestration
+- append-only SQLite replay evidence
+- execution-quality reporting with explicit evidence limits
+- Ruff, strict Mypy, coverage, and Python 3.10–3.13 CI gates
+
+## Phase 3 — current change
+
+- strict schema-v1 MarketEvent JSONL datasets
+- strict schema-v1 YAML experiment and sweep configuration
+- canonical serialization and semantic SHA-256 identities
+- deterministic plan, leg, candidate, and evaluation identifiers
+- CLI validation, execution, verification, and matrix-planning commands
+- content-addressed evidence bundles with source/canonical inputs
+- manifest, SQLite evidence, JSON reports, Markdown report, and checksums
+- independent raw/canonical, manifest, checksum, run-state, and SQLite verification
+- bounded parameter grids and purged walk-forward plans
+- deterministic tests and CI CLI smoke coverage
 
 ## Release gate
 
-No real venue integration is in scope. A later adapter must pass independent review for secrets, idempotency, reconciliation, stale-data rejection, and unmatched-leg handling before it can be enabled.
+The project remains offline and paper-only. No real venue integration is in scope. A future adapter would require independent review for secrets, authorization, idempotency, reconciliation, stale-data rejection, unmatched-leg handling, regulatory constraints, and an explicit opt-in execution boundary.

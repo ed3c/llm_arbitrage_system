@@ -1,6 +1,6 @@
 PYTHON ?= python
 
-.PHONY: install lint typecheck check
+.PHONY: install lint typecheck test phase3-smoke check
 
 install:
 	$(PYTHON) -m pip install -e ".[dev]"
@@ -12,4 +12,15 @@ lint:
 typecheck:
 	$(PYTHON) -m mypy src
 
-check: lint typecheck
+test:
+	$(PYTHON) -m pytest --cov=llm_arbitrage_system --cov-report=term-missing --cov-fail-under=70
+
+phase3-smoke:
+	rm -rf .phase3-runs
+	llm-arbitrage validate-dataset examples/phase3/market_events.jsonl
+	llm-arbitrage validate-config examples/phase3/experiment.yaml
+	llm-arbitrage run --dataset examples/phase3/market_events.jsonl --config examples/phase3/experiment.yaml --output .phase3-runs --code-revision phase3-smoke
+	bundle=$$(find .phase3-runs -mindepth 1 -maxdepth 1 -type d -name 'exp-*' -print -quit); test -n "$$bundle"; llm-arbitrage verify "$$bundle"
+	llm-arbitrage plan-matrix --dataset examples/phase3/market_events.jsonl --config examples/phase3/experiment.yaml --sweep examples/phase3/sweep.yaml --output .phase3-runs/matrix.json
+
+check: lint typecheck test
