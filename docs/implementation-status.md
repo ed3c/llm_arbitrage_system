@@ -2,34 +2,39 @@
 
 ## Phase 1 — merged
 
-- immutable typed domain contracts
+- immutable typed contracts
 - validated analytics configuration
-- Kaufman ER/KAMA, rolling Z-score, ATR percentage, and Kalman filtering
-- packaging, contribution, security, and architecture documentation
+- Kaufman ER/KAMA, Z-score, ATR percentage, and Kalman filtering
 
 ## Phase 2 and Phase 2B — merged
 
-- paper-only funding carry, crowding reversion, and RWA lead-lag routing
-- stateful approval, capacity reservation, and terminal reconciliation
-- deterministic multi-leg simulation and partial-outcome compensation
+- three paper-only strategy routes
+- stateful approval and capacity reservation
+- deterministic multi-leg simulation and compensation
 - bounded asyncio orchestration
-- append-only SQLite replay evidence
-- execution-quality reporting with explicit evidence limits
-- Ruff, strict Mypy, coverage, and Python 3.10–3.13 CI gates
+- append-only SQLite evidence and execution-quality reports
+- Ruff, strict Mypy, coverage, and Python 3.10–3.13 CI
 
-## Phase 3 — current change
+## Phase 3 — merged
 
-- strict schema-v1 MarketEvent JSONL datasets
-- strict schema-v1 YAML experiment and sweep configuration
-- canonical serialization and semantic SHA-256 identities
-- deterministic plan, leg, candidate, and evaluation identifiers
-- CLI validation, execution, verification, and matrix-planning commands
-- content-addressed evidence bundles with source/canonical inputs
-- manifest, SQLite evidence, JSON reports, Markdown report, and checksums
-- independent raw/canonical, manifest, checksum, run-state, and SQLite verification
+- strict JSONL/YAML experiment inputs
+- canonical serialization and semantic identities
+- deterministic plan/candidate/evaluation IDs
+- content-addressed evidence bundles and verification
 - bounded parameter grids and purged walk-forward plans
-- deterministic tests and CI CLI smoke coverage
+
+## Phase 4 — current change
+
+- Ed25519 provenance key generation with private files outside evidence
+- detached bundle attestations and trusted-key verification
+- content-addressed dataset lineage manifests and parent DAGs
+- one planned test-slice evaluation runner
+- checksummed evaluation binding records
+- local SQLite trusted experiment registry
+- immutable experiment and evaluation imports
+- complete/partial/missing cross-window coverage aggregation
+- CLI, examples, tests, documentation, and Phase 4 CI smoke
 
 ## Release gate
 
-The project remains offline and paper-only. No real venue integration is in scope. A future adapter would require independent review for secrets, authorization, idempotency, reconciliation, stale-data rejection, unmatched-leg handling, regulatory constraints, and an explicit opt-in execution boundary.
+The project remains offline and paper-only. No real venue integration is in scope. Any future adapter requires independent review for secrets, authorization, idempotency, reconciliation, stale-data rejection, unmatched-leg handling, regulatory constraints, and an explicit opt-in boundary.
