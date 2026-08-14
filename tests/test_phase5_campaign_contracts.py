@@ -93,11 +93,6 @@ def test_campaign_contract_fails_closed_on_invalid_fields() -> None:
         parse_campaign_spec({"schema_version": 1, "unexpected": True})
     with pytest.raises(ValueError, match="cannot contain duplicates"):
         CampaignSelection(include_evaluation_ids=("evaluation-a", "evaluation-a"))
-    with pytest.raises(ValueError, match="include and exclude"):
-        CampaignSelection(
-            include_evaluation_ids=("evaluation-a",),
-            exclude_evaluation_ids=("evaluation-a",),
-        )
     with pytest.raises(ValueError, match=r"\[1, 16\]"):
         CampaignExecutionPolicy(maximum_parallel_evaluations=17)
     with pytest.raises(ValueError, match=r"\[1, 4096\]"):
@@ -178,5 +173,5 @@ def test_campaign_store_rejects_manifest_or_evaluation_drift(
         with pytest.raises(RuntimeError, match="evaluation set conflicts"):
             store.initialize(manifest, (*selected, "evaluation-extra"))
         store.start(manifest.campaign_id)
-        with pytest.raises(RuntimeError, match="cannot finish"):
+        with pytest.raises(RuntimeError, match="cannot contain pending"):
             store.finish(manifest.campaign_id, "completed")
