@@ -11,4 +11,6 @@ build/
 .venv/
 state/
 .kill-switch
+.phase3-runs/
+experiment-runs/
 .DS_Store
