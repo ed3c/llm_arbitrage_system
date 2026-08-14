@@ -15,6 +15,11 @@ from llm_arbitrage_system.experiments.bundle_validation import (
     json_object,
     nested_string,
 )
+from llm_arbitrage_system.experiments.campaign import load_campaign_spec
+from llm_arbitrage_system.experiments.campaign_runner import (
+    campaign_status,
+    run_campaign,
+)
 from llm_arbitrage_system.experiments.canonical import canonical_json_bytes
 from llm_arbitrage_system.experiments.config import load_experiment_config
 from llm_arbitrage_system.experiments.dataset import load_jsonl_dataset
@@ -46,6 +51,8 @@ def build_parser() -> argparse.ArgumentParser:
     validate_config.add_argument("config", type=Path)
     validate_lineage = subparsers.add_parser("validate-lineage")
     validate_lineage.add_argument("lineage", type=Path)
+    validate_campaign = subparsers.add_parser("validate-campaign")
+    validate_campaign.add_argument("campaign", type=Path)
 
     run = subparsers.add_parser("run")
     run.add_argument("--dataset", type=Path, required=True)
@@ -93,6 +100,21 @@ def build_parser() -> argparse.ArgumentParser:
     evaluation.add_argument("--lineage-id")
     evaluation.add_argument("--force", action="store_true")
 
+    campaign = subparsers.add_parser("run-campaign")
+    campaign.add_argument("--dataset", type=Path, required=True)
+    campaign.add_argument("--config", type=Path, required=True)
+    campaign.add_argument("--matrix", type=Path, required=True)
+    campaign.add_argument("--campaign", type=Path, required=True)
+    campaign.add_argument("--registry", type=Path, required=True)
+    campaign.add_argument("--private-key", type=Path, required=True)
+    campaign.add_argument("--output", type=Path, required=True)
+    campaign.add_argument("--code-revision")
+    campaign.add_argument("--lineage-id")
+    campaign.add_argument("--retry-failed", action="store_true")
+
+    campaign_summary = subparsers.add_parser("campaign-status")
+    campaign_summary.add_argument("workspace", type=Path)
+
     registry_init = subparsers.add_parser("registry-init")
     registry_init.add_argument("registry", type=Path)
     registry_trust = subparsers.add_parser("registry-trust-key")
@@ -127,7 +149,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     arguments = build_parser().parse_args(argv)
     try:
         payload = _dispatch(arguments)
-    except (OSError, ValueError, RuntimeError) as error:
+    except (OSError, KeyError, ValueError, RuntimeError) as error:
         print(f"error: {error}", file=sys.stderr)
         return 2
     print(json.dumps(payload, sort_keys=True, indent=2, ensure_ascii=False))
@@ -142,6 +164,8 @@ def _dispatch(arguments: argparse.Namespace) -> dict[str, Any]:
         return load_experiment_config(arguments.config).summary()
     if command == "validate-lineage":
         return load_lineage_manifest(arguments.lineage).summary()
+    if command == "validate-campaign":
+        return load_campaign_spec(arguments.campaign).summary()
     if command == "verify":
         return verify_bundle(arguments.bundle).as_dict()
     if command == "run":
@@ -230,6 +254,23 @@ def _dispatch(arguments: argparse.Namespace) -> dict[str, Any]:
                 force=bool(arguments.force),
             )
         ).as_dict()
+    if command == "run-campaign":
+        return asyncio.run(
+            run_campaign(
+                dataset_path=arguments.dataset,
+                config_path=arguments.config,
+                matrix_path=arguments.matrix,
+                campaign_path=arguments.campaign,
+                registry_path=arguments.registry,
+                private_key_path=arguments.private_key,
+                output_root=arguments.output,
+                code_revision=arguments.code_revision,
+                lineage_id=arguments.lineage_id,
+                retry_failed=bool(arguments.retry_failed),
+            )
+        ).as_dict()
+    if command == "campaign-status":
+        return campaign_status(arguments.workspace)
     if command == "registry-init":
         with ExperimentRegistry(arguments.registry) as registry:
             return registry.verify().as_dict()
