@@ -12,6 +12,10 @@ from llm_arbitrage_system.domain.contracts import (
     Side,
 )
 
+_DEFAULT_SLIPPAGE_BPS = Decimal("5")
+_DEFAULT_FEE_BPS = Decimal("1")
+_EMPTY_FAILED_LEG_INDEXES: frozenset[int] = frozenset()
+
 
 class DeterministicPaperExecutor:
     """Produce reproducible simulated fills and reverse partial outcomes.
@@ -22,9 +26,9 @@ class DeterministicPaperExecutor:
     def __init__(
         self,
         *,
-        slippage_bps: Decimal = Decimal("5"),
-        fee_bps: Decimal = Decimal("1"),
-        fail_leg_indexes: frozenset[int] = frozenset(),
+        slippage_bps: Decimal = _DEFAULT_SLIPPAGE_BPS,
+        fee_bps: Decimal = _DEFAULT_FEE_BPS,
+        fail_leg_indexes: frozenset[int] = _EMPTY_FAILED_LEG_INDEXES,
     ) -> None:
         if slippage_bps < 0 or fee_bps < 0:
             raise ValueError("simulation costs cannot be negative")

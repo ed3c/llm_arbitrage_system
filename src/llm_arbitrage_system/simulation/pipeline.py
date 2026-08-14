@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 import asyncio
+from collections.abc import Iterable
 from dataclasses import dataclass
-from typing import Iterable
 
 from llm_arbitrage_system.analytics.engine import AnalyticsEngine
 from llm_arbitrage_system.domain.contracts import (
