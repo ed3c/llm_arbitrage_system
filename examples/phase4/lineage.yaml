@@ -1,0 +1,12 @@
+schema_version: 1
+dataset_semantic_sha256: 320918f7d8bfb39fc51d34076660fe5a822f31a1c492ca4b4fe95e0f48907b88
+kind: source
+operation:
+  name: synthetic_fixture_capture
+  version: "1"
+  parameters:
+    fixture: phase3-market-events
+parents: []
+source_uri: synthetic://llm-arbitrage-system/examples/phase3/market_events.jsonl
+notes:
+  - Synthetic repository fixture; not authenticated market data.
