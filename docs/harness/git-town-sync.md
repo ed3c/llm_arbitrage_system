@@ -33,6 +33,7 @@ capture   repository evidence from fixed Git commands
 sync      one fixed Git Town command shape, bounded by a hard timeout
 verify    the step-5 postconditions, independent of the mutating path
 append    one immutable entry in the receipt ledger
+propose-rollback   compare the world against a receipt and propose, never act
 ```
 
 The Git Town executable is resolved from the logical selector
@@ -68,6 +69,7 @@ constants is caught rather than trusted.
 | tool selector unresolved, or version is not `v24.0.0` | `BLOCKED_TOOL_ADMISSION` |
 | non-zero exit with no more specific state | `FAILED_TOOL` |
 | any postcondition fails, even on a zero exit | `FAILED_EVAL` |
+| a rollback is requested but the world moved since the receipt | `ROLLBACK_REFUSED_DRIFT` |
 
 ## Signal → action
 
@@ -111,9 +113,13 @@ attestation; these make the red paths part of the same suite.
 
 ## Deliberate boundaries
 
-- Rollback is recorded, not performed. The receipt carries the immutable
-  pre-sync subject; `git town undo`, raw reset/delete and force push remain
-  human-owned, and #19 owns the drift-refusal control.
+- Rollback is proposed, never performed. `propose-rollback` compares the head
+  against the receipt's recorded after-subject and confirms the rollback
+  subject is still reachable. Any disagreement is `ROLLBACK_REFUSED_DRIFT`:
+  the receipt no longer describes the world, so restoring from it would
+  overwrite a change nobody has looked at. A clean comparison returns a bounded
+  proposal with `requires_human_admit`. `git town undo`, raw reset/delete and
+  force push are never run unattended. Issue #19 owns the drift canaries.
 - Prompt and conflict classification is textual plus a Git state probe. Text
   matching alone would miss a silent conflict, and the state probe alone would
   miss a tool that reports a conflict without leaving markers; neither is

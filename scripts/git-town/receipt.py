@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 """Bounded sync executor, independent verifier and append-only receipts (#18).
 
-Three typed operations, no free-form command field anywhere:
+Five typed operations, no free-form command field anywhere:
 
 ``capture``  read repository evidence with fixed Git commands
 ``sync``     run one fixed Git Town command shape under a hard timeout
 ``verify``   assert the postconditions in ``docs/git/WORKER_PROTOCOL.md`` step 5
 ``append``   add one immutable entry to the receipt ledger
+``propose-rollback``  compare the world against a receipt and propose, never act
 
 The command shape is built here from ``docs/git/REPO_PROFILE.md``; the caller
 selects a mode, never an argument vector. Streams never reach a receipt raw:
@@ -34,6 +35,7 @@ EVIDENCE_SCHEMA = "llm-arbitrage/sync-evidence/v1"
 RUN_SCHEMA = "llm-arbitrage/sync-run/v1"
 VERIFY_SCHEMA = "llm-arbitrage/sync-verification/v1"
 LEDGER_SCHEMA = "llm-arbitrage/sync-receipt/v1"
+ROLLBACK_SCHEMA = "llm-arbitrage/rollback-proposal/v1"
 
 PERENNIAL_BRANCHES = ("main",)
 REQUIRED_GIT_TOWN_VERSION = "v24.0.0"
@@ -54,6 +56,7 @@ RESULT_BLOCKED_POLICY = "BLOCKED_POLICY"
 RESULT_BLOCKED_TOOL_ADMISSION = "BLOCKED_TOOL_ADMISSION"
 RESULT_FAILED_TOOL = "FAILED_TOOL"
 RESULT_FAILED_EVAL = "FAILED_EVAL"
+RESULT_ROLLBACK_REFUSED_DRIFT = "ROLLBACK_REFUSED_DRIFT"
 RESULT_PASS = "PASS"
 
 _CREDENTIAL_URL = re.compile(r"[a-z][a-z0-9+.-]*://[^/\s@]*:[^/\s@]*@", re.IGNORECASE)
@@ -359,6 +362,71 @@ def verify_sync(
     }
 
 
+# --- drift-aware rollback proposal ---------------------------------------
+
+
+def propose_rollback(*, repository: Path, receipt: Mapping[str, Any]) -> dict[str, Any]:
+    """Compare the world against a receipt and *propose* a restoration.
+
+    Nothing is executed. `docs/git/WORKER_PROTOCOL.md` makes rollback human
+    owned, so this returns a bounded proposal or refuses. If anything moved
+    since the receipt was written, the receipt no longer describes the world and
+    restoring from it would overwrite a change nobody has looked at.
+    """
+
+    head_branch = str(receipt["head_branch"])
+    expected_after = str(receipt["after_subject"])
+    rollback_subject = str(receipt["rollback_subject"])
+
+    drift: list[str] = []
+    current_head = _git(repository, "rev-parse", head_branch, check=False)
+    if not current_head:
+        drift.append(f"{head_branch} no longer resolves")
+    elif current_head != expected_after:
+        drift.append(
+            f"{head_branch} is at {current_head} but the receipt recorded {expected_after}"
+        )
+    reachable = subprocess.run(
+        ["git", "-C", str(repository), "cat-file", "-e", f"{rollback_subject}^{{commit}}"],
+        capture_output=True,
+        timeout=120,
+        check=False,
+    )
+    if reachable.returncode != 0:
+        drift.append(f"the rollback subject {rollback_subject} is no longer reachable")
+
+    if drift:
+        return {
+            "schema": ROLLBACK_SCHEMA,
+            "head_branch": head_branch,
+            "rollback_subject": rollback_subject,
+            "expected_after_subject": expected_after,
+            "observed_head": current_head or None,
+            "drift": drift,
+            "proposal": None,
+            "requires_human_admit": True,
+            "result": RESULT_ROLLBACK_REFUSED_DRIFT,
+        }
+
+    return {
+        "schema": ROLLBACK_SCHEMA,
+        "head_branch": head_branch,
+        "rollback_subject": rollback_subject,
+        "expected_after_subject": expected_after,
+        "observed_head": current_head,
+        "drift": [],
+        # A proposal, not a command: no undo, reset, delete or force push is
+        # ever run unattended.
+        "proposal": {
+            "branch": head_branch,
+            "restore_from": expected_after,
+            "restore_to": rollback_subject,
+        },
+        "requires_human_admit": True,
+        "result": RESULT_PASS,
+    }
+
+
 # --- append-only ledger --------------------------------------------------
 
 
@@ -428,7 +496,10 @@ def _parse_arguments(argv: Sequence[str]) -> argparse.Namespace:
         prog="receipt.py", description="Bounded Git Town sync executor, verifier and receipt ledger."
     )
     parser.add_argument(
-        "operation", nargs="?", choices=("capture", "sync", "verify", "append"), help="typed operation"
+        "operation",
+        nargs="?",
+        choices=("capture", "sync", "verify", "append", "propose-rollback"),
+        help="typed operation",
     )
     parser.add_argument("--repository", type=Path, default=Path.cwd())
     parser.add_argument("--head-branch")
@@ -443,6 +514,7 @@ def _parse_arguments(argv: Sequence[str]) -> argparse.Namespace:
     parser.add_argument("--allowed-path", action="append", default=[])
     parser.add_argument("--excluded-path", action="append", default=[])
     parser.add_argument("--receipts-root", type=Path)
+    parser.add_argument("--receipt", type=Path, help="ledger entry to propose a rollback from")
     parser.add_argument("--selftest", action="store_true")
     return parser.parse_args(list(argv))
 
@@ -478,6 +550,11 @@ def _dispatch(arguments: argparse.Namespace) -> Mapping[str, Any]:
                 _read_json(arguments.dry_run_record) if arguments.dry_run_record else None
             ),
             live_record=_read_json(arguments.live_record) if arguments.live_record else None,
+        )
+    if arguments.operation == "propose-rollback":
+        return propose_rollback(
+            repository=repository,
+            receipt=_read_json(Path(_require(arguments.receipt, "--receipt"))),
         )
     before = _read_json(Path(_require(arguments.before, "--before")))
     after = _read_json(Path(_require(arguments.after, "--after")))
@@ -524,6 +601,17 @@ def _run_selftest() -> int:
     assert _classify("Username for 'https://github.com':", returncode=0, repository=Path.cwd()) == (
         RESULT_BLOCKED_PROMPT
     )
+
+    drifted = propose_rollback(
+        repository=Path.cwd(),
+        receipt={
+            "head_branch": "refs/heads/does-not-exist",
+            "after_subject": "0" * 40,
+            "rollback_subject": "0" * 40,
+        },
+    )
+    assert drifted["result"] == RESULT_ROLLBACK_REFUSED_DRIFT
+    assert drifted["proposal"] is None and drifted["requires_human_admit"] is True
 
     print("receipt selftest: PASS", file=sys.stderr)
     return 0

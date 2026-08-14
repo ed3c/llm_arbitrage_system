@@ -260,7 +260,7 @@ Every mutating run records immutable before refs. Rollback policy:
 1. compare current refs with the receipt's expected after refs;
 2. refuse if unrelated drift exists (`ROLLBACK_REFUSED_DRIFT`);
 3. propose a bounded ref restoration for human review;
-4. never run `git town undo`, raw destructive reset/delete, or force push unattended;
+4. never run `git town undo`, raw destructive reset/delete, or force push unattended — `scripts/git-town/receipt.py propose-rollback --receipt RECEIPT.json` returns a bounded proposal with `requires_human_admit`, or `ROLLBACK_REFUSED_DRIFT`, and executes nothing;
 5. record cleanup and remaining residue independently.
 
 ## Stable result mapping
