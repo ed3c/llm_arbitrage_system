@@ -33,14 +33,14 @@ Parent epic: [#11](https://github.com/ed3c/llm_arbitrage_system/issues/11).
 main@55ecf0e9a91006f563a080661cb6adf650e2439a
 └── PR #22 / issue #12 / docs/phase4-integration-ssot
     └── PR #23 / issue #13 / docs/git-town-governance
-        └── convergence PR / issue #14 / docs/readme-state-flow-index
+        └── PR #24 / issue #14 / docs/readme-state-flow-index
 ```
 
 | Order | Issue / PR | Base → head | Stack class | Path lease | State |
 | --- | --- | --- | --- | --- | --- |
 | 1 | [#12](https://github.com/ed3c/llm_arbitrage_system/issues/12) / [PR #22](https://github.com/ed3c/llm_arbitrage_system/pull/22) | `main → docs/phase4-integration-ssot` | foundation | `AGENTS.md`, integration/state/data-flow docs | `OPEN_DRAFT` |
 | 2 | [#13](https://github.com/ed3c/llm_arbitrage_system/issues/13) / [PR #23](https://github.com/ed3c/llm_arbitrage_system/pull/23) | `docs/phase4-integration-ssot → docs/git-town-governance` | child | `.git-town.toml`, `docs/git/**`, `docs/harness/**`, templates | `OPEN_DRAFT` |
-| 3 | [#14](https://github.com/ed3c/llm_arbitrage_system/issues/14) / PR assigned after publication | `docs/git-town-governance → docs/readme-state-flow-index` | convergence | `README.md`, this index | `OPEN_DRAFT` after publication |
+| 3 | [#14](https://github.com/ed3c/llm_arbitrage_system/issues/14) / [PR #24](https://github.com/ed3c/llm_arbitrage_system/pull/24) | `docs/git-town-governance → docs/readme-state-flow-index` | convergence | `README.md`, this index | `OPEN_DRAFT` |
 
 ### Slice #12 packet summary
 
@@ -90,6 +90,7 @@ human_admit: required
 branch: docs/readme-state-flow-index
 parent: docs/git-town-governance
 base: docs/git-town-governance
+pr: 24
 required_evals:
   - make check
   - README-path-link-audit
@@ -114,8 +115,8 @@ All three PRs stay Draft while reviewed as one stack. After explicit Human Admit
 1. admit PR #22 into main
 2. retarget PR #23 to main and rerun every required check on its new exact head/base
 3. admit PR #23
-4. retarget convergence PR to main and rerun every required check
-5. admit convergence PR
+4. retarget PR #24 to main and rerun every required check on its new exact head/base
+5. admit PR #24
 ```
 
 No Worker marks ready, retargets, merges, enters a queue, or invokes `git town ship` automatically.
@@ -137,7 +138,7 @@ main after docs convergence
 
 | Issue | Parent/dependencies | Molecular owner | Allowed-path summary | Required assertion and disagreement evidence | State |
 | --- | --- | --- | --- | --- | --- |
-| [#15](https://github.com/ed3c/llm_arbitrage_system/issues/15) | docs convergence | exact Git Town v24.0.0 host admission | admission doc + admission receipts | exact artifact/version/license/provenance/SBOM/notices/legal; wrong digest/version/architecture controls | `PLANNED`, blocked on host/legal owners |
+| [#15](https://github.com/ed3c/llm_arbitrage_system/issues/15) | documentation convergence | exact Git Town v24.0.0 host admission | admission doc + admission receipts | exact artifact/version/license/provenance/SBOM/notices/legal; wrong digest/version/architecture controls | `PLANNED`, blocked on host/legal owners |
 | [#16](https://github.com/ed3c/llm_arbitrage_system/issues/16) | #15 | typed task-packet/path-lease validator | validator/tests/task Harness docs | every required field; removal/overlap/wrong-parent/arbitrary-shell controls | `PLANNED` |
 | [#17](https://github.com/ed3c/llm_arbitrage_system/issues/17) | #16 | linked-worktree and lease doctor | doctor/lease/tests/docs | isolated worktree/exclusive lease; primary/dirty/duplicate/expired/bad-remote controls | `PLANNED` |
 | [#18](https://github.com/ed3c/llm_arbitrage_system/issues/18) | #15–#17 | bounded dry-run/no-push sync and receipts | fixed sync/receipt adapters/tests/docs | dry-run scope, timeout, no-push, graph/path/exact-head checks; prompt/remote movement controls | `PLANNED` |
