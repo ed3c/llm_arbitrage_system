@@ -38,6 +38,10 @@ Read in this order before editing:
    - [`docs/replay-evidence.md`](docs/replay-evidence.md);
    - [`docs/phase3-experiments.md`](docs/phase3-experiments.md);
    - [`docs/phase4-trust-registry.md`](docs/phase4-trust-registry.md);
+   - [`docs/phase5-campaigns.md`](docs/phase5-campaigns.md);
+   - [`docs/phase6-valuation.md`](docs/phase6-valuation.md);
+   - [`docs/phase7-selection-governance.md`](docs/phase7-selection-governance.md);
+   - [`docs/phase8-separation-of-duties.md`](docs/phase8-separation-of-duties.md);
 6. for Git/Stack PR work:
    - [`docs/git/README.md`](docs/git/README.md);
    - [`docs/git/REPO_PROFILE.md`](docs/git/REPO_PROFILE.md);
@@ -46,7 +50,13 @@ Read in this order before editing:
    - [`docs/git/WORKER_PROTOCOL.md`](docs/git/WORKER_PROTOCOL.md);
    - [`docs/git/TASK_PACKET.md`](docs/git/TASK_PACKET.md);
    - [`docs/git/EVALS.md`](docs/git/EVALS.md);
-   - [`docs/harness/README.md`](docs/harness/README.md);
+   - [`docs/git/PUBLICATION.md`](docs/git/PUBLICATION.md);
+   - [`docs/harness/README.md`](docs/harness/README.md) and the per-mechanism
+     contracts beside it ([task packet](docs/harness/git-town-task-packet.md),
+     [doctor](docs/harness/git-town-doctor.md),
+     [sync](docs/harness/git-town-sync.md),
+     [canaries](docs/harness/git-town-canaries.md),
+     [publication](docs/harness/git-town-publication.md));
 7. the canonical issue/task packet, nearest directory `README.md`, current branch/PR graph, exact heads, and current workflow evidence.
 
 Authority precedence:
@@ -64,7 +74,7 @@ repository policy and merged code
 Implementation baseline:
 
 ```text
-main@55ecf0e9a91006f563a080661cb6adf650e2439a
+main@2bcbeae05a9ea43497060d4cb61ad0a437c1bdb5
 ```
 
 | Layer | Implementation | State |
@@ -78,11 +88,19 @@ main@55ecf0e9a91006f563a080661cb6adf650e2439a
 | Reporting | execution quality and evidence-bounded optional risk metrics | `MERGED` |
 | Phase 3 experiments | strict inputs, semantic IDs, atomic bundles, verification, sweeps, walk-forward plans | `MERGED` |
 | Phase 4 trust/OOS | Ed25519 attestations, lineage DAG, test-only evaluation, trusted registry, coverage aggregation | `MERGED` |
-| Agent/integration SSOT | issue #12 / [PR #22](https://github.com/ed3c/llm_arbitrage_system/pull/22) | `OPEN_DRAFT` |
-| Git Town governance/profile | issue #13 / [PR #23](https://github.com/ed3c/llm_arbitrage_system/pull/23) | `OPEN_DRAFT` |
-| README convergence/index | issue #14 / [PR #24](https://github.com/ed3c/llm_arbitrage_system/pull/24) | `OPEN_DRAFT` |
-| Git Town host admission and adapters | issues #15–#21 | `PLANNED` / `NOT_IMPLEMENTED` / `NOT_EXERCISED` |
+| Phase 5 campaigns | strict campaign contracts, durable state journal with interruption recovery, bounded runner, trusted registration | `MERGED` |
+| Phase 6 valuation | strict terminal marks, deterministic bundle valuation, chronological trusted OOS statistics, signed reports | `MERGED` |
+| Phase 7 selection governance | preregistered policy, stability and Holm family diagnostics, signed human-review dossier | `MERGED` |
+| Phase 8 separation of duties | strict review requests, signed independent reviewer evidence, non-deployable quorum envelope | `MERGED` |
+| Agent/integration SSOT | issue #12 / [PR #22](https://github.com/ed3c/llm_arbitrage_system/pull/22) | `MERGED` |
+| Git Town governance/profile | issue #13 / [PR #23](https://github.com/ed3c/llm_arbitrage_system/pull/23) | `MERGED` |
+| README convergence/index | issue #14 / [PR #24](https://github.com/ed3c/llm_arbitrage_system/pull/24) | `MERGED` |
+| Git Town delivery mechanisms | issues #16–#20 / PRs [#62](https://github.com/ed3c/llm_arbitrage_system/pull/62)–[#66](https://github.com/ed3c/llm_arbitrage_system/pull/66) | `MERGED` as mechanisms, `NOT_EXERCISED` as live lanes |
+| Git Town host admission | issue #15 | `BLOCKED` on host acquisition and a named legal/transitive owner |
+| Live Git Town adoption audit | issue #21 | `NOT_EXERCISED` |
 | Live exchange/broker execution | prohibited | `BLOCKED` |
+
+Phase 5 through 8 each add evidence, never authority. Phase 6 marks positions without claiming the mark is realizable, Phase 7 diagnoses without selecting, and Phase 8 records a human decision while keeping deployment, trading and release flags false.
 
 See [`docs/integration-status.md`](docs/integration-status.md) for the exact merged/open/planned ledger and non-claims.
 
@@ -120,37 +138,54 @@ The PDF is a design basis. The code tree and merged PR history determine impleme
 
 ## Repository directory structure
 
-Markers: `[M]` merged, `[D]` Draft documentation stack, `[P]` planned path not yet implemented.
+Markers: `[M]` merged, `[P]` planned path not yet implemented.
 
 ```text
 llm_arbitrage_system/
-├── AGENTS.md                                      [D] Agent routing and invariants
-├── README.md                                      [D] convergence and traceability index
-├── .git-town.toml                                 [D] conservative static Git Town policy
+├── AGENTS.md                                      [M] Agent routing and invariants
+├── README.md                                      [M] convergence and traceability index
+├── .git-town.toml                                 [M] conservative static Git Town policy
 ├── Makefile                                       [M] quality and smoke entrypoints
 ├── pyproject.toml                                 [M] package, CLI and dependencies
 ├── SECURITY.md                                    [M] paper-only and secret boundary
 ├── config/README.md                               [M] configuration guidance
 ├── docs/
-│   ├── integration-status.md                      [D] merged/open/planned SSOT
-│   ├── state-machines.md                          [D] transition ownership
-│   ├── data-flow.md                               [D] end-to-end movement/evidence
+│   ├── integration-status.md                      [M] merged/open/planned SSOT
+│   ├── state-machines.md                          [M] transition ownership
+│   ├── data-flow.md                               [M] end-to-end movement/evidence
 │   ├── architecture.md                            [M] runtime/experiment architecture
 │   ├── replay-evidence.md                         [M] SQLite/report contract
 │   ├── phase3-experiments.md                      [M] reproducible experiment contract
 │   ├── phase4-trust-registry.md                   [M] provenance/lineage/OOS registry
-│   ├── git/                                       [D] repository Git Town projection
+│   ├── phase5-campaigns.md                        [M] resumable trusted campaigns
+│   ├── phase6-valuation.md                        [M] mark-to-market and OOS statistics
+│   ├── phase7-selection-governance.md             [M] preregistered selection governance
+│   ├── phase8-separation-of-duties.md             [M] research-review separation of duties
+│   ├── git/                                       [M] repository Git Town projection
 │   │   ├── README.md
 │   │   ├── REPO_PROFILE.md
 │   │   ├── GIT_TOWN_ADMISSION.md
 │   │   ├── STACKED_PRS.md
 │   │   ├── WORKER_PROTOCOL.md
 │   │   ├── TASK_PACKET.md
+│   │   ├── PUBLICATION.md
 │   │   └── EVALS.md
-│   └── harness/README.md                          [D] evidence ladder and controls
-├── examples/phase3/                               [M] dataset/config/sweep fixtures
-├── examples/phase4/                               [M] lineage fixture
-├── scripts/phase4_smoke.sh                        [M] offline trust/OOS smoke
+│   └── harness/                                   [M] evidence ladder and mechanism contracts
+│       ├── README.md
+│       ├── git-town-task-packet.md
+│       ├── git-town-doctor.md
+│       ├── git-town-sync.md
+│       ├── git-town-canaries.md
+│       └── git-town-publication.md
+├── examples/phase3/ … phase8/                     [M] dataset/config/policy fixtures
+├── scripts/
+│   ├── phase4_smoke.sh … phase8_smoke.sh          [M] offline per-phase smokes
+│   └── git-town/                                  [M] issues #16–#20 delivery mechanisms
+│       ├── task_packet.py                         [M] typed packet and path-lease validator
+│       ├── doctor.sh, lease.py                    [M] linked-worktree admission and leases
+│       ├── sync.sh, receipt.py                    [M] bounded no-push sync and receipts
+│       └── publish.sh, github_snapshot.py,
+│           remote_verify.py                       [M] publication gate and remote checks
 ├── src/llm_arbitrage_system/
 │   ├── domain/                                    [M] immutable contracts
 │   ├── analytics/                                 [M] adaptive feature state
@@ -158,15 +193,15 @@ llm_arbitrage_system/
 │   ├── simulation/                                [M] planner/approval/executor/pipeline
 │   ├── storage/                                   [M] replay journal
 │   ├── reporting/                                 [M] evidence-bounded metrics
-│   └── experiments/                               [M] experiment and trust control plane
+│   └── experiments/                               [M] experiment, trust, campaign, valuation,
+│                                                      selection and review control plane
 ├── tests/                                         [M] runtime/evidence/experiment/trust tests
-├── scripts/git-town/                              [P] issues #16–#20; `NOT_IMPLEMENTED`
-├── tests/git-town/                                [P] issues #16–#20; `NOT_IMPLEMENTED`
-├── fixtures/git-town/                             [P] issue #19; `NOT_IMPLEMENTED`
-└── receipts/git-town/                             [P] issues #15/#18/#20/#21; `NOT_IMPLEMENTED`
+├── tests/git-town/                                [M] mechanism selftests and controls
+├── fixtures/git-town/                             [M] deterministic canary tool
+└── receipts/git-town/                             [P] issues #15/#18/#20/#21; written at run time
 ```
 
-Planned paths are ownership routes, not claims that empty or hidden implementations exist.
+`receipts/git-town/` is the tracked receipt root named by `docs/git/REPO_PROFILE.md`. It is a route, not a claim that receipts exist: the sync adapter writes there when it runs, and it has never run against a real Git Town executable.
 
 ## Directory → State Machine → data contract
 
@@ -194,7 +229,7 @@ Planned paths are ownership routes, not claims that empty or hidden implementati
 | `aggregation.py` | coverage summary | matrix + registrations | none/partial/complete coverage | JSON output | selection/PnL/Sharpe/alpha stay null |
 | `docs/git/` | delivery policy | shared Skill + repo/issue/GitHub truth | profile/stack/Worker rules | tracked docs/TOML | missing evidence stays explicit |
 | `docs/harness/` | delivery eval contract | packets/mechanisms/subjects | assertions and controls | tracked docs; receipts planned | disagreement blocks/fails |
-| `scripts/git-town/` | future fixed adapters | admitted tool/packet/worktree/leases | bounded Git operations/receipts | planned receipt store | `NOT_IMPLEMENTED` until #16–#20 |
+| `scripts/git-town/` | fixed delivery adapters | admitted tool/packet/worktree/leases | bounded Git operations, gate decisions, receipts | `receipts/git-town/` when run | `MERGED` mechanisms; every real invocation returns `BLOCKED_TOOL_ADMISSION` until #15 |
 
 Detailed transitions: [`docs/state-machines.md`](docs/state-machines.md).
 
@@ -352,16 +387,19 @@ Current mechanism states:
 
 | Lane | State | Issue |
 | --- | --- | --- |
-| Static profile/config/governance | `OPEN_DRAFT` | #13 / PR #23 |
+| Static profile/config/governance | `MERGED` | #13 / PR #23 |
 | Host executable/provenance/SBOM/notices/legal receipt | `NOT_EXERCISED` | #15 |
-| Task-packet/path-lease validator | `NOT_IMPLEMENTED` | #16 |
-| Worktree/lease doctor | `NOT_IMPLEMENTED` | #17 |
-| Bounded no-push sync/receipt writer | `NOT_IMPLEMENTED` | #18 |
-| Conflict/prompt/timeout/rollback canaries | `NOT_IMPLEMENTED` | #19 |
-| Publication gate/remote verifier | `NOT_IMPLEMENTED` | #20 |
+| Task-packet/path-lease validator | `MERGED` mechanism | #16 / PR #62 |
+| Worktree/lease doctor | `MERGED` mechanism | #17 / PR #63 |
+| Bounded no-push sync/receipt writer | `MERGED` mechanism | #18 / PR #64 |
+| Conflict/prompt/timeout/rollback canaries | `MERGED` mechanism | #19 / PR #65 |
+| Publication gate/remote verifier | `MERGED` mechanism | #20 / PR #66 |
+| Live Git Town synchronization | `NOT_EXERCISED` | #15, #21 |
 | Live adoption audit | `NOT_EXERCISED` | #21 |
 
-The documentation branch/PR ancestry is real GitHub state. It is not a local admitted Git Town sync receipt.
+`MERGED` mechanism means the adapter and its disagreement-producing controls exist and pass in CI. It does not promote the live lane: every transition above still runs against a fixture or refuses with `BLOCKED_TOOL_ADMISSION`, because no host executable has been admitted.
+
+The branch/PR ancestry in this repository is real GitHub state. It is not a local admitted Git Town sync receipt.
 
 ## Historical merged PR index
 
@@ -372,48 +410,45 @@ The documentation branch/PR ancestry is real GitHub state. It is not a local adm
 | Phase 2B evidence/reporting/CI | [#4](https://github.com/ed3c/llm_arbitrage_system/pull/4) | `215ca9c7c81bea456a4e358a9d750a7157a9872b` | `MERGED` |
 | Phase 3 reproducible experiments | [#6](https://github.com/ed3c/llm_arbitrage_system/pull/6) | `e201e4b012e1596a7c470309cd2af792e009ee17` | `MERGED` |
 | Phase 4 provenance/lineage/OOS registry | [#10](https://github.com/ed3c/llm_arbitrage_system/pull/10) | `55ecf0e9a91006f563a080661cb6adf650e2439a` | `MERGED` |
+| CI prerequisite | [#26](https://github.com/ed3c/llm_arbitrage_system/pull/26) | `989ee49533bfaef1bbbb1b1462dc58cf71897e6f` | `MERGED` |
+| Documentation SSOT 1/3 | [#22](https://github.com/ed3c/llm_arbitrage_system/pull/22) | `8a2b955c594dfbd69895d87adc3c2c5700940cee` | `MERGED` |
+| Documentation SSOT 2/3 | [#23](https://github.com/ed3c/llm_arbitrage_system/pull/23) | `60bb43770041fc5e8f0f619ad730034b8bea3462` | `MERGED` |
+| Documentation SSOT 3/3 | [#24](https://github.com/ed3c/llm_arbitrage_system/pull/24) | `b0e1e86ea17b801a3149b9001d32d1fb4ec0d4ee` | `MERGED` |
+| Phase 5A/B/C campaigns | [#31](https://github.com/ed3c/llm_arbitrage_system/pull/31), [#32](https://github.com/ed3c/llm_arbitrage_system/pull/32), [#33](https://github.com/ed3c/llm_arbitrage_system/pull/33) | `53b9a8b`, `96d387e`, `f8fe5f8` | `MERGED` |
+| Phase 6A/B/C valuation | [#39](https://github.com/ed3c/llm_arbitrage_system/pull/39), [#40](https://github.com/ed3c/llm_arbitrage_system/pull/40), [#41](https://github.com/ed3c/llm_arbitrage_system/pull/41) | `3af5bb5`, `3d96416`, `00b2fd1` | `MERGED` |
+| Phase 7A/B/C selection governance | [#50](https://github.com/ed3c/llm_arbitrage_system/pull/50), [#52](https://github.com/ed3c/llm_arbitrage_system/pull/52), [#53](https://github.com/ed3c/llm_arbitrage_system/pull/53) | `ae45c60`, `31e6fc4`, `b54013b` | `MERGED` |
+| Phase 8A/B/C separation of duties | [#59](https://github.com/ed3c/llm_arbitrage_system/pull/59), [#60](https://github.com/ed3c/llm_arbitrage_system/pull/60), [#61](https://github.com/ed3c/llm_arbitrage_system/pull/61) | `8bb7459`, `d8a5a01`, `008fb92` | `MERGED` |
+| GT-02…GT-06 delivery mechanisms | [#62](https://github.com/ed3c/llm_arbitrage_system/pull/62)–[#66](https://github.com/ed3c/llm_arbitrage_system/pull/66) | `955aa12`, `d38428c`, `f230887`, `dab0908`, `2bcbeae` | `MERGED` |
 
-## Active documentation Stack PRs
+Every one of these merged with a merge commit. The stack was serial, so squashing a parent would have rewritten commits each child already contained.
 
-Epic: [#11](https://github.com/ed3c/llm_arbitrage_system/issues/11).
-
-```text
-main@55ecf0e9a91006f563a080661cb6adf650e2439a
-└── PR #22 / issue #12 / docs/phase4-integration-ssot
-    └── PR #23 / issue #13 / docs/git-town-governance
-        └── PR #24 / issue #14 / docs/readme-state-flow-index
-```
-
-| Order | PR | Base → head | Path lease | State |
-| --- | --- | --- | --- | --- |
-| 1 | [#22](https://github.com/ed3c/llm_arbitrage_system/pull/22) | `main → docs/phase4-integration-ssot` | `AGENTS.md`, integration/state/data-flow docs | `OPEN_DRAFT` |
-| 2 | [#23](https://github.com/ed3c/llm_arbitrage_system/pull/23) | `docs/phase4-integration-ssot → docs/git-town-governance` | `.git-town.toml`, `docs/git/**`, `docs/harness/**`, templates | `OPEN_DRAFT` |
-| 3 | [#24](https://github.com/ed3c/llm_arbitrage_system/pull/24) | `docs/git-town-governance → docs/readme-state-flow-index` | `README.md`, `docs/git/STACKED_PRS.md` | `OPEN_DRAFT` |
-
-Parent-first merge order requires explicit Human Admit. After each parent merge, retarget the child and rerun exact-head/base checks. No Agent marks ready, retargets, merges, enters a queue, or invokes `git town ship` automatically.
-
-## Planned molecular leaf Stack PRs
+## Git Town molecular leaf status
 
 ```text
-main after documentation convergence
-└── infra/git-town-admission                           #15
-    └── tooling/git-town-task-packet-validator         #16
-        └── tooling/git-town-worktree-doctor           #17
-            └── tooling/git-town-bounded-sync          #18
-                └── test/git-town-fail-closed-canaries #19
-                    └── tooling/git-town-publication-gate #20
-                        └── convergence/git-town-adoption-audit #21
+main
+└── tooling/git-town-task-packet-validator         #16  MERGED
+    └── tooling/git-town-worktree-doctor           #17  MERGED
+        └── tooling/git-town-bounded-sync          #18  MERGED
+            └── test/git-town-fail-closed-canaries #19  MERGED
+                └── tooling/git-town-publication-gate #20  MERGED
+
+infra/git-town-admission                           #15  BLOCKED (never created)
+convergence/git-town-adoption-audit                #21  PLANNED
 ```
 
-| Issue | Branch/parent | Molecular owner | Path lease summary | Required disagreement evidence | State |
-| --- | --- | --- | --- | --- | --- |
-| [#15](https://github.com/ed3c/llm_arbitrage_system/issues/15) | `infra/git-town-admission ← main` | exact host tool admission | admission doc/receipts | wrong version/digest/architecture; missing legal/transitive state | `PLANNED`, blocked on host/legal owners |
-| [#16](https://github.com/ed3c/llm_arbitrage_system/issues/16) | `tooling/git-town-task-packet-validator ← #15` | typed packet/path lease | validator/tests/Harness | removed field, overlap, wrong parent, arbitrary shell | `PLANNED` |
-| [#17](https://github.com/ed3c/llm_arbitrage_system/issues/17) | `tooling/git-town-worktree-doctor ← #16` | linked worktree/leases | doctor/lease/tests/docs | primary checkout, dirty state, duplicate/expired lease, bad remote | `PLANNED` |
-| [#18](https://github.com/ed3c/llm_arbitrage_system/issues/18) | `tooling/git-town-bounded-sync ← #17` | dry-run/no-push sync/receipts | fixed adapters/tests/docs | scope mismatch, timeout, prompt, remote movement, path drift | `PLANNED` |
-| [#19](https://github.com/ed3c/llm_arbitrage_system/issues/19) | `test/git-town-fail-closed-canaries ← #18` | conflict/cleanup/rollback canaries | tests/fixtures/docs | conflict, prompt, timeout, residue, ref movement, rollback drift | `PLANNED` |
-| [#20](https://github.com/ed3c/llm_arbitrage_system/issues/20) | `tooling/git-town-publication-gate ← #19` | publication/remote verifier | adapters/tests/CI/docs | stale receipt, old SHA, feedback, billing, wrong remote/head/parent | `PLANNED` |
-| [#21](https://github.com/ed3c/llm_arbitrage_system/issues/21) | `convergence/git-town-adoption-audit ← #20` | live adoption audit | convergence docs/receipts | missing evidence lane; false promotion of `NOT_EXERCISED` | `PLANNED` |
+| Issue | Molecular owner | Disagreement evidence that exists | State |
+| --- | --- | --- | --- |
+| [#15](https://github.com/ed3c/llm_arbitrage_system/issues/15) | exact host tool admission | — | `BLOCKED` on a named host acquisition method and legal/transitive review owner |
+| [#16](https://github.com/ed3c/llm_arbitrage_system/issues/16) | typed packet/path lease | removed field (generated per schema field), sibling overlap, wrong parent, arbitrary shell field | `MERGED` |
+| [#17](https://github.com/ed3c/llm_arbitrage_system/issues/17) | linked worktree/leases | primary checkout, dirty state, in-progress operation, duplicate/expired lease, credential-bearing remote, missing prompt policy | `MERGED` |
+| [#18](https://github.com/ed3c/llm_arbitrage_system/issues/18) | dry-run/no-push sync/receipts | scope mismatch, dropped `--no-push`, timeout, prompt, remote movement, out-of-lease diff, moved perennial ref | `MERGED` |
+| [#19](https://github.com/ed3c/llm_arbitrage_system/issues/19) | conflict/cleanup/rollback canaries | planted conflict, **silent conflict on a zero exit**, editor/credential prompt, timeout, orphaned grandchild, residue, ref movement, rollback drift | `MERGED` |
+| [#20](https://github.com/ed3c/llm_arbitrage_system/issues/20) | publication/remote verifier | stale receipt, old-SHA CI, repeated feedback, open billing circuit, wrong remote, missing guard, head mismatch, protected-ref rewrite, replayed decision | `MERGED` |
+| [#21](https://github.com/ed3c/llm_arbitrage_system/issues/21) | live adoption audit | — | `PLANNED`, depends on #15 and a live run |
+
+`#16` named `infra/git-town-admission` as its parent. That branch was never created because `#15` is blocked on human decisions, so the tooling stack parented onto the documentation stack instead and asserts no `#15` lane.
+
+**A `MERGED` row is mechanism evidence, not live evidence.** No mechanism has run against a real Git Town executable: `HOST_GIT_TOWN_BIN` is unresolved, `live_execution_admitted` is `false`, and any real invocation returns `BLOCKED_TOOL_ADMISSION`. The canaries drive `fixtures/git-town/canary_tool.sh`, which reproduces the conditions the protocol enumerates rather than Git Town's semantics. `live_canary` stays `NOT_EXERCISED` for every row.
 
 See [`docs/git/STACKED_PRS.md`](docs/git/STACKED_PRS.md) for full packets, rollback subjects, dependencies, controls, and evidence lanes.
 
@@ -427,9 +462,39 @@ python -m pip install -e ".[dev]"
 make check
 make phase3-smoke
 make phase4-smoke
+
+bash scripts/phase5_smoke.sh
+bash scripts/phase6_smoke.sh
+bash scripts/phase7_smoke.sh
+bash scripts/phase8_smoke.sh
 ```
 
-CI runs Ruff, strict Mypy, pytest with coverage, Python 3.10–3.13 compatibility, Phase 3 smoke, and Phase 4 trust/registry smoke. These commands test the offline repository; they do not prove Git Town admission or a live trading path.
+Delivery-mechanism gates:
+
+```bash
+pytest tests/git-town
+
+python scripts/git-town/task_packet.py --selftest
+python scripts/git-town/lease.py --selftest
+python scripts/git-town/receipt.py --selftest
+python scripts/git-town/github_snapshot.py --selftest
+python scripts/git-town/remote_verify.py --selftest
+bash scripts/git-town/doctor.sh --selftest
+bash scripts/git-town/sync.sh --selftest
+bash scripts/git-town/publish.sh --selftest
+```
+
+Each `--selftest` plants mutations and fails if any of them validates, so the red path is exercised by the same command that reports green.
+
+CI runs three jobs:
+
+```text
+Quality gates (Python 3.13)      ruff, strict mypy, pytest + coverage floor, phase 3-8 smokes
+Python 3.10 / 3.11 / 3.12        compatibility test run
+Git Town delivery mechanisms     every --selftest plus tests/git-town
+```
+
+These commands test the offline repository. They do not prove Git Town host admission, a live synchronization, a publication, or a live trading path.
 
 ## Phase 3 experiment quick start
 
@@ -495,4 +560,4 @@ release promotion and production deployment
 destructive or drifted rollback
 ```
 
-All documentation PRs under epic #11 remain Draft until the complete stack and current exact-head checks are reviewed together.
+Epic #11's documentation stack merged after the whole stack was reviewed together against current exact-head checks. Each PR in this repository was retargeted to `main`, revalidated at its post-update head, and merged only with every check green on that exact subject. Merge itself was never automated: each one ran under explicit human authorization.

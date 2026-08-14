@@ -8,23 +8,42 @@ Do not infer a live-trading capability from names, comments, examples, or the so
 
 ## Current truth
 
-The implementation baseline for this documentation stack is:
+The implementation baseline is:
 
 ```text
-main@55ecf0e9a91006f563a080661cb6adf650e2439a
+main@2bcbeae05a9ea43497060d4cb61ad0a437c1bdb5
 ```
 
 Merged implementation history:
 
 ```text
-PR #1   Phase 1  typed contracts and adaptive analytics
-PR #3   Phase 2  deterministic offline paper runtime
-PR #4   Phase 2B durable SQLite evidence, reports, and CI
-PR #6   Phase 3  reproducible content-addressed experiments
-PR #10  Phase 4  signed provenance, lineage, and OOS registry
+PR #1        Phase 1  typed contracts and adaptive analytics
+PR #3        Phase 2  deterministic offline paper runtime
+PR #4        Phase 2B durable SQLite evidence, reports, and CI
+PR #6        Phase 3  reproducible content-addressed experiments
+PR #10       Phase 4  signed provenance, lineage, and OOS registry
+PR #26       CI prerequisite: canonical-config round trip and strict Mypy baseline
+PR #22-#24   documentation SSOT, Git Town governance, README convergence
+PR #31-#33   Phase 5  resumable trusted experiment campaigns
+PR #39-#41   Phase 6  mark-to-market valuation and OOS statistics
+PR #50,52,53 Phase 7  preregistered selection governance and signed dossier
+PR #59-#61   Phase 8  separation-of-duties human decision evidence
+PR #62-#66   GT-02..GT-06 Git Town delivery mechanisms
 ```
 
-Current documentation/Git-governance work is tracked by epic #11. Issues #12–#14 form one serial documentation stack. Issues #15–#21 are planned molecular Git Town adoption leaves; they are not merged implementation.
+Epic #11 tracked the documentation stack (issues #12–#14, all merged). Issues #16–#20 delivered the Git Town mechanisms under `scripts/git-town/`, `tests/git-town/` and `fixtures/git-town/`.
+
+Two Git Town issues remain open, and neither is blocked on code:
+
+```text
+#15  exact host tool admission   BLOCKED  needs a named host acquisition method
+                                          and a legal/transitive review owner
+#21  live adoption audit         PLANNED  needs #15 and a real Git Town run
+```
+
+**The mechanisms exist; the live lanes do not.** Every `scripts/git-town/` entrypoint has a selftest and disagreement-producing controls that run in CI, but none has ever executed against a real Git Town binary: `HOST_GIT_TOWN_BIN` is unresolved, `live_execution_admitted` is `false` in `docs/git/REPO_PROFILE.md`, and any real invocation returns `BLOCKED_TOOL_ADMISSION`. Do not read a passing mechanism test as evidence that Git Town synchronization, publication, or adoption has been exercised.
+
+A second Phase 7 decomposition (issues #42–#45, PRs #51 and #54) was closed as superseded: it collided add/add with #50/#52 on three files, and the surviving lane is the one Phase 8 was built on.
 
 ## Mandatory read order
 
@@ -39,6 +58,10 @@ Before changing any file, read in this order:
    - `docs/replay-evidence.md`;
    - `docs/phase3-experiments.md`;
    - `docs/phase4-trust-registry.md`;
+   - `docs/phase5-campaigns.md`;
+   - `docs/phase6-valuation.md`;
+   - `docs/phase7-selection-governance.md`;
+   - `docs/phase8-separation-of-duties.md`;
 6. for branch, worktree, Stack PR, synchronization, or publication work, every file under `docs/git/` and `docs/harness/` that exists on the current branch;
 7. the nearest `README.md` for every writable directory;
 8. the canonical issue/task packet and its parent issue;
@@ -176,9 +199,29 @@ python -m pip install -e ".[dev]"
 make check
 make phase3-smoke
 make phase4-smoke
+bash scripts/phase5_smoke.sh
+bash scripts/phase6_smoke.sh
+bash scripts/phase7_smoke.sh
+bash scripts/phase8_smoke.sh
+pytest tests/git-town
 ```
 
-These commands verify repository behavior. They do not prove Git Town admission, a remote publication, or Human Admit.
+Delivery mechanisms carry their own cheap verification surface. Run the relevant one before trusting it, and before any expensive or irreversible operation:
+
+```bash
+python scripts/git-town/task_packet.py --selftest
+python scripts/git-town/lease.py --selftest
+python scripts/git-town/receipt.py --selftest
+python scripts/git-town/github_snapshot.py --selftest
+python scripts/git-town/remote_verify.py --selftest
+bash scripts/git-town/doctor.sh --selftest
+bash scripts/git-town/sync.sh --selftest
+bash scripts/git-town/publish.sh --selftest
+```
+
+Each selftest plants mutations and fails if any of them validates, so a green result also demonstrates the red path.
+
+These commands verify repository behavior. They do not prove Git Town admission, a live synchronization, a remote publication, or Human Admit.
 
 ## Prohibited changes
 
