@@ -1,6 +1,6 @@
 # Stacked PR and traceability index
 
-## State vocabulary
+## Evidence and delivery states
 
 ```text
 MERGED
@@ -13,19 +13,17 @@ NOT_EXERCISED
 SKIPPED_BY_POLICY
 ```
 
-This index records dependency, branch parent, PR base, path lease, eval owner, evidence state, cleanup and rollback. Git Town lineage does not replace GitHub PR lineage; both must agree.
+Git Town branch lineage, GitHub PR bases, path leases and exact-head evidence must agree. One does not proxy another.
 
-## Historical merged implementation
+## Merged implementation history
 
-| Phase | PR | Branch | Base at review | Merge subject | State |
-| --- | --- | --- | --- | --- | --- |
-| Phase 1 contracts/analytics | [#1](https://github.com/ed3c/llm_arbitrage_system/pull/1) | `feat/pdf-architecture-v2` | `main` | `0e8ceec3456ad2c74fa77237d3b814520f0213fc` | `MERGED` |
-| Phase 2 paper runtime | [#3](https://github.com/ed3c/llm_arbitrage_system/pull/3) | `feat/research-harness-phase2` | `main` after Phase 1 | `1a255ad865ce346816bc04ef8680d80477c32cc7` | `MERGED` |
-| Phase 2B evidence/reporting | [#4](https://github.com/ed3c/llm_arbitrage_system/pull/4) | `feat/replay-evidence-phase2b` | `main` after Phase 2 | `215ca9c7c81bea456a4e358a9d750a7157a9872b` | `MERGED` |
-| Phase 3 experiments | [#6](https://github.com/ed3c/llm_arbitrage_system/pull/6) | `feat/reproducible-experiments-phase3` | `main` after Phase 2B | `e201e4b012e1596a7c470309cd2af792e009ee17` | `MERGED` |
-| Phase 4 trust/registry | [#10](https://github.com/ed3c/llm_arbitrage_system/pull/10) | `feat/signed-provenance-phase4-v3` | `main` after Phase 3 | `55ecf0e9a91006f563a080661cb6adf650e2439a` | `MERGED` |
-
-Historical merge subjects prove ancestry on `main`; they do not automatically prove current CI, current dependency versions, or live trading.
+| Phase | PR | Branch | Merge subject | State |
+| --- | --- | --- | --- | --- |
+| Phase 1 contracts/analytics | [#1](https://github.com/ed3c/llm_arbitrage_system/pull/1) | `feat/pdf-architecture-v2` | `0e8ceec3456ad2c74fa77237d3b814520f0213fc` | `MERGED` |
+| Phase 2 paper runtime | [#3](https://github.com/ed3c/llm_arbitrage_system/pull/3) | `feat/research-harness-phase2` | `1a255ad865ce346816bc04ef8680d80477c32cc7` | `MERGED` |
+| Phase 2B evidence/reporting | [#4](https://github.com/ed3c/llm_arbitrage_system/pull/4) | `feat/replay-evidence-phase2b` | `215ca9c7c81bea456a4e358a9d750a7157a9872b` | `MERGED` |
+| Phase 3 experiments | [#6](https://github.com/ed3c/llm_arbitrage_system/pull/6) | `feat/reproducible-experiments-phase3` | `e201e4b012e1596a7c470309cd2af792e009ee17` | `MERGED` |
+| Phase 4 trust/OOS registry | [#10](https://github.com/ed3c/llm_arbitrage_system/pull/10) | `feat/signed-provenance-phase4-v3` | `55ecf0e9a91006f563a080661cb6adf650e2439a` | `MERGED` |
 
 ## Active documentation stack
 
@@ -33,157 +31,155 @@ Parent epic: [#11](https://github.com/ed3c/llm_arbitrage_system/issues/11).
 
 ```text
 main@55ecf0e9a91006f563a080661cb6adf650e2439a
-└── docs/phase4-integration-ssot          issue #12 / PR #22
-    └── docs/git-town-governance          issue #13 / PR created after this commit
-        └── docs/readme-state-flow-index  issue #14 / convergence PR follows
+└── PR #22 / issue #12 / docs/phase4-integration-ssot
+    └── PR #23 / issue #13 / docs/git-town-governance
+        └── PR #24 / issue #14 / docs/readme-state-flow-index
 ```
 
-### Slice 1 — Agent and integration SSOT
+| Order | Issue / PR | Base → head | Stack class | Path lease | State |
+| --- | --- | --- | --- | --- | --- |
+| 1 | [#12](https://github.com/ed3c/llm_arbitrage_system/issues/12) / [PR #22](https://github.com/ed3c/llm_arbitrage_system/pull/22) | `main → docs/phase4-integration-ssot` | foundation | `AGENTS.md`, integration/state/data-flow docs | `OPEN_DRAFT` |
+| 2 | [#13](https://github.com/ed3c/llm_arbitrage_system/issues/13) / [PR #23](https://github.com/ed3c/llm_arbitrage_system/pull/23) | `docs/phase4-integration-ssot → docs/git-town-governance` | child | `.git-town.toml`, `docs/git/**`, `docs/harness/**`, templates | `OPEN_DRAFT` |
+| 3 | [#14](https://github.com/ed3c/llm_arbitrage_system/issues/14) / [PR #24](https://github.com/ed3c/llm_arbitrage_system/pull/24) | `docs/git-town-governance → docs/readme-state-flow-index` | convergence | `README.md`, this index | `OPEN_DRAFT` |
+
+### Slice #12 packet summary
 
 ```yaml
-issue: 12
-pr: 22
 branch: docs/phase4-integration-ssot
 parent: main
-pr_base: main
-stack_class: foundation
-path_lease:
-  - AGENTS.md
-  - docs/integration-status.md
-  - docs/state-machines.md
-  - docs/data-flow.md
-state: OPEN_DRAFT
+base: main
 required_evals:
   - make check
   - repository-tree-reference-audit
   - merged-open-planned-lineage-audit
   - Agent-read-order-audit
-live_git_town_sync: NOT_EXERCISED
+negative_controls:
+  - missing referenced path
+  - planned mechanism described as merged
+  - removed evidence vocabulary
 rollback_subject: main@55ecf0e9a91006f563a080661cb6adf650e2439a
+live_git_town_sync: NOT_EXERCISED
 human_admit: required
 ```
 
-### Slice 2 — Git Town governance
+### Slice #13 packet summary
 
 ```yaml
-issue: 13
-pr: assigned after branch publication
 branch: docs/git-town-governance
 parent: docs/phase4-integration-ssot
-pr_base: docs/phase4-integration-ssot
-stack_class: child
-path_lease:
-  - .git-town.toml
-  - docs/git/**
-  - docs/harness/**
-  - .github/ISSUE_TEMPLATE/stacked-pr-worker.md
-  - .github/PULL_REQUEST_TEMPLATE.md
-state: OPEN_DRAFT_after_PR_creation
+base: docs/phase4-integration-ssot
 required_evals:
   - make check
   - git-town-config-static-audit
-  - repo-profile-placeholder-audit
-  - task-packet-required-field-audit
-  - PR-template-stack-contract-audit
+  - repository-profile-completeness-audit
+  - canonical-shared-Skill-ownership-audit
+  - task-packet-and-template-audit
+negative_controls:
+  - unresolved required profile field
+  - push or auto-resolve enabled
+  - local Skill shadow copy
+  - tool presence used as legal/provenance proof
+rollback_subject: docs/phase4-integration-ssot@3e4b1f455518a3813be0251cb1d8c1c1879cd9e9
 live_git_town_sync: NOT_EXERCISED
-rollback_subject: exact parent head at branch creation
 human_admit: required
 ```
 
-### Slice 3 — README convergence
+### Slice #14 packet summary
 
 ```yaml
-issue: 14
-pr: assigned after branch publication
 branch: docs/readme-state-flow-index
 parent: docs/git-town-governance
-pr_base: docs/git-town-governance
-stack_class: convergence
-path_lease:
-  - README.md
-  - docs/git/STACKED_PRS.md
-state: PLANNED_until_branch_publication
+base: docs/git-town-governance
+pr: 24
 required_evals:
   - make check
   - README-path-link-audit
   - directory-to-State-Machine-audit
   - stack-ancestry-and-PR-base-audit
   - historical-PR-phase-audit
+negative_controls:
+  - absent module path
+  - wrong PR base
+  - collapsed merged-open-planned state
+  - future leaf missing owner-dependency-path-eval-state
+rollback_subject: docs/git-town-governance@225ad8b3d803add97d57628ab90e722b185632c6
 live_git_town_sync: NOT_EXERCISED
-rollback_subject: exact parent head at branch creation
 human_admit: required
 ```
 
-## Merge order
+## Review and merge sequence
 
-After all Draft PRs are reviewed together and exact-head gates are green:
+All three PRs stay Draft while reviewed as one stack. After explicit Human Admit and current exact-head gates:
 
 ```text
-1. Human Admit PR #22 into main
-2. retarget/recheck Slice 2 onto main, then Human Admit
-3. retarget/recheck Slice 3 onto main, then Human Admit
+1. admit PR #22 into main
+2. retarget PR #23 to main and rerun every required check on its new exact head/base
+3. admit PR #23
+4. retarget PR #24 to main and rerun every required check on its new exact head/base
+5. admit PR #24
 ```
 
-No Agent may mark a PR ready, retarget it, merge it, enter a merge queue, or invoke `git town ship` without explicit Human Admit.
+No Worker marks ready, retargets, merges, enters a queue, or invokes `git town ship` automatically.
 
-## Planned molecular Git Town implementation stack
+## Planned molecular Git Town stack
 
-These are future issues, not current implementation. Branches are not created until their task packet, exact tool admission and path lease are valid.
+These issues are implementation contracts, not available code. Branches are created only after task-packet validation, exact tool admission and path leasing.
 
 ```text
 main after docs convergence
-└── infra/git-town-admission                    #15
-    └── tooling/git-town-task-packet-validator  #16
-        └── tooling/git-town-worktree-doctor    #17
-            └── tooling/git-town-bounded-sync   #18
+└── infra/git-town-admission                         #15
+    └── tooling/git-town-task-packet-validator       #16
+        └── tooling/git-town-worktree-doctor         #17
+            └── tooling/git-town-bounded-sync        #18
                 └── test/git-town-fail-closed-canaries #19
                     └── tooling/git-town-publication-gate #20
                         └── convergence/git-town-adoption-audit #21
 ```
 
-| Issue | Leaf owner | Dependencies | Path lease summary | Required evidence/control | State |
+| Issue | Parent/dependencies | Molecular owner | Allowed-path summary | Required assertion and disagreement evidence | State |
 | --- | --- | --- | --- | --- | --- |
-| [#15](https://github.com/ed3c/llm_arbitrage_system/issues/15) | exact tool admission | docs governance | admission doc + admission receipts | artifact/version/license/provenance/SBOM/notices/legal; wrong artifact/version mutations | `PLANNED`, host/legal owner required |
-| [#16](https://github.com/ed3c/llm_arbitrage_system/issues/16) | task packet and path lease | #15 | typed validator + tests + task-packet Harness | remove each required field; overlap; ancestry mismatch; arbitrary shell rejection | `PLANNED` |
-| [#17](https://github.com/ed3c/llm_arbitrage_system/issues/17) | worktree and lease doctor | #16 | doctor/lease scripts + tests | primary checkout, dirty tree, duplicate/overlap/expired lease, remote identity controls | `PLANNED` |
-| [#18](https://github.com/ed3c/llm_arbitrage_system/issues/18) | bounded no-push sync/receipts | #15–#17 | sync/receipt adapters + tests | dry-run scope match, timeout, graph/path verification, exact-head eval replay | `PLANNED` |
-| [#19](https://github.com/ed3c/llm_arbitrage_system/issues/19) | fail-closed canaries | #18 | fixture repos, canary tests, Harness doc | semantic conflict, prompt, timeout, residue, ref movement, rollback drift | `PLANNED` |
-| [#20](https://github.com/ed3c/llm_arbitrage_system/issues/20) | publication gate | #18–#19 | typed snapshot/gate/remote verifier + CI | stale receipt, old-SHA CI, repeated feedback, billing, wrong remote, head mismatch | `PLANNED` |
-| [#21](https://github.com/ed3c/llm_arbitrage_system/issues/21) | convergence/live audit | #15–#20 | convergence docs + receipts | all evidence lanes separate; first live no-push and publication canaries | `PLANNED` |
+| [#15](https://github.com/ed3c/llm_arbitrage_system/issues/15) | documentation convergence | exact Git Town v24.0.0 host admission | admission doc + admission receipts | exact artifact/version/license/provenance/SBOM/notices/legal; wrong digest/version/architecture controls | `PLANNED`, blocked on host/legal owners |
+| [#16](https://github.com/ed3c/llm_arbitrage_system/issues/16) | #15 | typed task-packet/path-lease validator | validator/tests/task Harness docs | every required field; removal/overlap/wrong-parent/arbitrary-shell controls | `PLANNED` |
+| [#17](https://github.com/ed3c/llm_arbitrage_system/issues/17) | #16 | linked-worktree and lease doctor | doctor/lease/tests/docs | isolated worktree/exclusive lease; primary/dirty/duplicate/expired/bad-remote controls | `PLANNED` |
+| [#18](https://github.com/ed3c/llm_arbitrage_system/issues/18) | #15–#17 | bounded dry-run/no-push sync and receipts | fixed sync/receipt adapters/tests/docs | dry-run scope, timeout, no-push, graph/path/exact-head checks; prompt/remote movement controls | `PLANNED` |
+| [#19](https://github.com/ed3c/llm_arbitrage_system/issues/19) | #18 | fail-closed conflict/cleanup/rollback canaries | canary tests/fixtures/docs | planted conflict/prompt/timeout/residue/ref-movement/rollback-drift | `PLANNED` |
+| [#20](https://github.com/ed3c/llm_arbitrage_system/issues/20) | #18–#19 | publication gate and remote verifier | publication/snapshot/remote adapters/tests/CI/docs | one intent, exact head, remote ancestry; stale/old-SHA/feedback/billing/wrong-remote controls | `PLANNED` |
+| [#21](https://github.com/ed3c/llm_arbitrage_system/issues/21) | #15–#20 | live convergence/adoption audit | convergence docs/receipts | all evidence lanes; missing-lane and false-PASS controls | `PLANNED` |
 
-## Why the future stack is serial
-
-The leaves form a safety dependency chain, not merely a feature list:
+## Safety dependency rationale
 
 ```text
-no live Worker without exact tool admission
-no owned worktree without a valid task packet
-no sync without a worktree/lease doctor
-no confidence in sync without fail-closed canaries
-no publication without verified local evidence
-no adoption claim without convergence/live audit
+exact tool before live Worker
+  → valid packet before branch/path mutation
+  → isolated worktree and leases before sync
+  → bounded no-push sync before local verification
+  → fail-closed canaries before trust in the mechanism
+  → exact local evidence before publication
+  → remote verification and trusted checks before Human Admit
+  → convergence audit before an adoption claim
 ```
 
-Independent future runtime work must use sibling branches with disjoint path leases rather than nesting under this Git-governance chain.
+Independent runtime features must use sibling branches with disjoint path leases instead of nesting under this delivery-governance chain.
 
-## Traceability fields required for every future PR
+## Required PR traceability fields
+
+Every future PR records:
 
 ```text
-issue and parent issue
-branch, parent branch and PR base
-stack class and child PRs
-allowed/excluded paths
-branch/path/worktree leases
-exact before/after subjects
-required evals and negative controls
+issue/parent issue and packet digest
+branch/parent/base and stack class
+child PRs and parallel-safe siblings
+allowed/excluded paths and lease receipt
+exact before/after commit and tree subjects
+positive evals and negative/mutation controls
 local sync state
-local verification state
+local exact-head verification state
 publication decision
-remote publication state
-remote ancestry state
-GitHub trusted-check state
-cleanup and residue
-rollback subject
-Human Admit state
+remote publication
+post-push remote head/ancestry
+GitHub trusted check
+cleanup/residue
+rollback subject and drift check
 remaining ABSENT / NOT_IMPLEMENTED / NOT_EXERCISED / SKIPPED_BY_POLICY
+Human Admit state
 ```
