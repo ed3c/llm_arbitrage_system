@@ -463,10 +463,10 @@ make check
 make phase3-smoke
 make phase4-smoke
 
-bash scripts/phase5_smoke.sh
-bash scripts/phase6_smoke.sh
-bash scripts/phase7_smoke.sh
-bash scripts/phase8_smoke.sh
+make phase5-smoke
+make phase6-smoke
+make phase7-smoke
+make phase8-smoke
 ```
 
 Delivery-mechanism gates:
