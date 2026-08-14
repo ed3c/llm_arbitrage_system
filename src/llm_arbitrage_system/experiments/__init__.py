@@ -16,25 +16,61 @@ from llm_arbitrage_system.experiments.evaluation import (
     PlannedEvaluationRunResult,
     run_planned_evaluation,
 )
+from llm_arbitrage_system.experiments.oos_statistics import (
+    EvaluationValuationInput,
+    OOSStatisticsReport,
+    build_oos_statistics,
+)
 from llm_arbitrage_system.experiments.registry import ExperimentRegistry
 from llm_arbitrage_system.experiments.runner import ExperimentRunResult, run_experiment
 from llm_arbitrage_system.experiments.signing import sign_bundle, verify_attestation
+from llm_arbitrage_system.experiments.statistics_inputs import (
+    StatisticsInputSnapshot,
+    load_statistics_inputs,
+)
+from llm_arbitrage_system.experiments.statistics_signing import (
+    StatisticsAttestationVerificationResult,
+    StatisticsReportSnapshot,
+    load_statistics_report,
+    sign_statistics_report,
+    verify_statistics_attestation,
+)
+from llm_arbitrage_system.experiments.valuation import (
+    BundleValuationReport,
+    TerminalMarksSnapshot,
+    load_terminal_marks,
+    value_bundle,
+)
 
 __all__ = [
+    "BundleValuationReport",
     "CampaignManifest",
     "CampaignRunResult",
     "CampaignSpecSnapshot",
     "CampaignStore",
     "DatasetSnapshot",
+    "EvaluationValuationInput",
     "ExperimentRegistry",
     "ExperimentRunResult",
+    "OOSStatisticsReport",
     "PlannedEvaluationRunResult",
+    "StatisticsAttestationVerificationResult",
+    "StatisticsInputSnapshot",
+    "StatisticsReportSnapshot",
+    "TerminalMarksSnapshot",
+    "build_oos_statistics",
     "campaign_status",
     "load_campaign_spec",
     "load_jsonl_dataset",
+    "load_statistics_inputs",
+    "load_statistics_report",
+    "load_terminal_marks",
     "run_campaign",
     "run_experiment",
     "run_planned_evaluation",
     "sign_bundle",
+    "sign_statistics_report",
+    "value_bundle",
     "verify_attestation",
+    "verify_statistics_attestation",
 ]
