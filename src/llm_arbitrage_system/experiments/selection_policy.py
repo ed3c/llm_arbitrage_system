@@ -681,18 +681,14 @@ def _governance_warnings(
         and candidate_count > policy.maximum_candidates_without_warning
     ):
         warnings.append(
-            (
-                f"Candidate count {candidate_count} exceeds the unadjusted warning "
-                f"threshold {policy.maximum_candidates_without_warning}; no "
-                "multiple-testing adjustment or significance claim is made."
-            )
+            f"Candidate count {candidate_count} exceeds the unadjusted warning "
+            f"threshold {policy.maximum_candidates_without_warning}; no "
+            "multiple-testing adjustment or significance claim is made."
         )
     if policy.mode == "require_single_candidate" and candidate_count != 1:
         warnings.append(
-            (
-                f"Policy requires exactly one candidate, but the report contains "
-                f"{candidate_count}; all candidates are blocked."
-            )
+            f"Policy requires exactly one candidate, but the report contains "
+            f"{candidate_count}; all candidates are blocked."
         )
     return tuple(warnings)
 
