@@ -51,6 +51,7 @@ Read in this order before editing:
    - [`docs/git/TASK_PACKET.md`](docs/git/TASK_PACKET.md);
    - [`docs/git/EVALS.md`](docs/git/EVALS.md);
    - [`docs/git/PUBLICATION.md`](docs/git/PUBLICATION.md);
+   - [`docs/git/ADOPTION_AUDIT.md`](docs/git/ADOPTION_AUDIT.md);
    - [`docs/harness/README.md`](docs/harness/README.md) and the per-mechanism
      contracts beside it ([task packet](docs/harness/git-town-task-packet.md),
      [doctor](docs/harness/git-town-doctor.md),
@@ -97,7 +98,7 @@ main@2bcbeae05a9ea43497060d4cb61ad0a437c1bdb5
 | README convergence/index | issue #14 / [PR #24](https://github.com/ed3c/llm_arbitrage_system/pull/24) | `MERGED` |
 | Git Town delivery mechanisms | issues #16–#20 / PRs [#62](https://github.com/ed3c/llm_arbitrage_system/pull/62)–[#66](https://github.com/ed3c/llm_arbitrage_system/pull/66) | `MERGED` as mechanisms, `NOT_EXERCISED` as live lanes |
 | Git Town host admission | issue #15 | `PASS` for `darwin_arm64`, receipt `eda73fcc` |
-| Live Git Town adoption audit | issue #21 | `NOT_EXERCISED` |
+| Live Git Town adoption audit | issue #21 | sync lane `PASS`, publication lanes `NOT_EXERCISED` — `docs/git/ADOPTION_AUDIT.md` |
 | Live exchange/broker execution | prohibited | `BLOCKED` |
 
 Phase 5 through 8 each add evidence, never authority. Phase 6 marks positions without claiming the mark is realizable, Phase 7 diagnoses without selecting, and Phase 8 records a human decision while keeping deployment, trading and release flags false.
@@ -433,7 +434,7 @@ main
                 └── tooling/git-town-publication-gate #20  MERGED
 
 infra/git-town-admitted                            #15  PASS (darwin_arm64)
-convergence/git-town-adoption-audit                #21  PLANNED
+convergence/git-town-adoption-audit                #21  sync lane PASS, publication NOT_EXERCISED
 ```
 
 | Issue | Molecular owner | Disagreement evidence that exists | State |
@@ -444,7 +445,7 @@ convergence/git-town-adoption-audit                #21  PLANNED
 | [#18](https://github.com/ed3c/llm_arbitrage_system/issues/18) | dry-run/no-push sync/receipts | scope mismatch, dropped `--no-push`, timeout, prompt, remote movement, out-of-lease diff, moved perennial ref | `MERGED` |
 | [#19](https://github.com/ed3c/llm_arbitrage_system/issues/19) | conflict/cleanup/rollback canaries | planted conflict, **silent conflict on a zero exit**, editor/credential prompt, timeout, orphaned grandchild, residue, ref movement, rollback drift | `MERGED` |
 | [#20](https://github.com/ed3c/llm_arbitrage_system/issues/20) | publication/remote verifier | stale receipt, old-SHA CI, repeated feedback, open billing circuit, wrong remote, missing guard, head mismatch, protected-ref rewrite, replayed decision | `MERGED` |
-| [#21](https://github.com/ed3c/llm_arbitrage_system/issues/21) | live adoption audit | — | `PLANNED`, depends on #15 and a live run |
+| [#21](https://github.com/ed3c/llm_arbitrage_system/issues/21) | live adoption audit | three defects found only by running it for real | sync lane `PASS`, publication lanes `NOT_EXERCISED` |
 
 `#16` named `infra/git-town-admission` as its parent. That branch was never created because `#15` is blocked on human decisions, so the tooling stack parented onto the documentation stack instead and asserts no `#15` lane.
 

@@ -179,7 +179,7 @@ Issue #16 named `infra/git-town-admission` as its parent. That branch does not e
 | [#18](https://github.com/ed3c/llm_arbitrage_system/issues/18) | bounded dry-run/no-push sync and receipts | `scripts/git-town/sync.sh`, `receipt.py`, `tests/git-town/test_sync_contract.py`, `docs/harness/git-town-sync.md` | `MERGED` |
 | [#19](https://github.com/ed3c/llm_arbitrage_system/issues/19) | fail-closed conflict/cleanup/rollback canaries | `fixtures/git-town/canary_tool.sh`, `tests/git-town/test_fail_closed_canaries.py`, `docs/harness/git-town-canaries.md` | `MERGED` |
 | [#20](https://github.com/ed3c/llm_arbitrage_system/issues/20) | publication gate and remote verifier | `scripts/git-town/publish.sh`, `github_snapshot.py`, `remote_verify.py`, `tests/git-town/test_publication_gate.py`, `docs/git/PUBLICATION.md`, `docs/harness/git-town-publication.md`, CI job | `MERGED` |
-| [#21](https://github.com/ed3c/llm_arbitrage_system/issues/21) | live convergence/adoption audit | — | `PLANNED`, depends on #15 and on a live run |
+| [#21](https://github.com/ed3c/llm_arbitrage_system/issues/21) | live convergence/adoption audit | three defects found only by a real run | sync lane `PASS`, publication lanes `NOT_EXERCISED` |
 
 ### What `MERGED` does and does not mean here
 

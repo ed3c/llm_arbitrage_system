@@ -13,7 +13,7 @@ worktree/lease doctor:   IMPLEMENTED (#17)   scripts/git-town/doctor.sh, lease.p
 bounded sync/receipts:   IMPLEMENTED (#18)   scripts/git-town/sync.sh, receipt.py
 fail-closed canaries:    NOT_IMPLEMENTED (#19)
 publication gate:        NOT_IMPLEMENTED (#20)
-live adoption audit:     NOT_EXERCISED (#21)
+live adoption audit:     sync PASS, publication NOT_EXERCISED (#21)
 ```
 
 `IMPLEMENTED` means the mechanism and its mutation controls exist and pass; it does not mean the lane was exercised against a live Git Town run. Until the remaining owner issues merge and their exact-subject receipts pass, live Worker execution still returns `BLOCKED_TOOL_ADMISSION` — host admission (#15) is unexercised, so `live_execution_admitted` remains `false` in `docs/git/REPO_PROFILE.md`.
@@ -100,6 +100,28 @@ protected/perennial refs
 Git Town executable digest/version
 command shape and timeout
 ```
+
+### Step 1b — declare the branch parent to Git Town
+
+Git Town keeps its own notion of a branch's parent, and it is not the task
+packet's. With `--non-interactive` set, a branch whose parent Git Town does not
+know fails the dry run outright:
+
+```text
+Error: cannot determine parent branch for "<branch>": interactivity disabled via CLI
+```
+
+That is the correct refusal — the alternative would be a prompt inside a
+bounded run. Declare the parent once per branch, using the value the task
+packet already carries in `stack.parent_branch`:
+
+```bash
+git town set-parent <parent-branch>
+```
+
+This writes Git Town configuration and is therefore an operator action, not
+something the sync adapter performs: `scripts/git-town/sync.sh` builds one
+fixed command shape and mutates no configuration.
 
 ### Step 2 — dry-run
 

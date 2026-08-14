@@ -85,6 +85,13 @@ Run with `--dry-run-only`. It performs admission and the dry run and stops
 before the live command. There is a control asserting exactly one invocation
 reached the tool and that it carried `--dry-run`.
 
+**Signal: the dry run says it cannot determine the parent branch.**
+Git Town tracks branch parents separately from the task packet, and
+`--non-interactive` turns an unknown parent into a refusal rather than a
+prompt. Run `git town set-parent <parent-branch>` once for that branch, using
+`stack.parent_branch` from the packet. The adapter deliberately does not do
+this for you: it builds one fixed command shape and mutates no configuration.
+
 **Signal: a run blocked.**
 The intermediate evidence directory is preserved and its path is printed. On a
 clean run it is removed. Cleanup never destroys blocked evidence, because a
