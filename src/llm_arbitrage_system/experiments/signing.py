@@ -233,7 +233,7 @@ def verify_attestation(
     lineage_value = payload.get("lineage_id")
     if lineage_value is not None and not isinstance(lineage_value, str):
         raise ValueError("attestation lineage_id must be a string or null")
-    lineage_id = _optional_lineage_id(cast(str | None, lineage_value))
+    lineage_id = _optional_lineage_id(lineage_value)
     normalized_expected_lineage_id = _optional_lineage_id(expected_lineage_id)
     if (
         normalized_expected_lineage_id is not None

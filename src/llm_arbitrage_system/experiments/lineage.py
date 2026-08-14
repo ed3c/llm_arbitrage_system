@@ -160,7 +160,7 @@ def parse_lineage_manifest(payload: Mapping[str, Any]) -> DatasetLineageManifest
     source_uri_value = payload.get("source_uri")
     if source_uri_value is not None and not isinstance(source_uri_value, str):
         raise ValueError("lineage source_uri must be a string or null")
-    source_uri = cast(str | None, source_uri_value)
+    source_uri = source_uri_value
     if source_uri is not None and not source_uri.strip():
         raise ValueError("lineage source_uri cannot be empty")
 

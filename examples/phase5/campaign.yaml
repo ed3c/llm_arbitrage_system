@@ -1,0 +1,8 @@
+schema_version: 1
+execution:
+  maximum_parallel_evaluations: 2
+  maximum_failures: 2
+  stop_on_failure: false
+selection:
+  include_evaluation_ids: []
+  exclude_evaluation_ids: []

@@ -62,6 +62,14 @@ jobs:
             --output .phase3-runs/matrix.json
       - name: Phase 4 trust and registry smoke
         run: bash scripts/phase4_smoke.sh
+      - name: Phase 5 resumable campaign smoke
+        run: bash scripts/phase5_smoke.sh
+      - name: Phase 6 valuation and OOS statistics smoke
+        run: bash scripts/phase6_smoke.sh
+      - name: Phase 7 signed selection governance smoke
+        run: bash scripts/phase7_smoke.sh
+      - name: Phase 8 separation-of-duties quorum smoke
+        run: bash scripts/phase8_smoke.sh
 
   compatibility:
     name: Python ${{ matrix.python-version }}
