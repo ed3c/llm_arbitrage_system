@@ -5,12 +5,12 @@ from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from datetime import datetime
 from decimal import Decimal
+from itertools import pairwise
 from math import sqrt
 from pathlib import Path
 from statistics import fmean, pstdev
 from typing import Any
 
-from llm_arbitrage_system.experiments.bundle_validation import json_object
 from llm_arbitrage_system.experiments.canonical import canonical_json_bytes, sha256_hex
 from llm_arbitrage_system.experiments.evaluation import (
     ExperimentMatrixSnapshot,
@@ -78,9 +78,7 @@ class OOSValuationObservation:
 class CandidateOOSStatistics:
     candidate_id: str
     candidate_config_sha256: str
-    coverage: str
     expected_evaluation_count: int
-    observed_evaluation_count: int
     initial_equity_usd: Decimal
     ending_equity_usd: Decimal
     total_mark_to_market_pnl_usd: Decimal
@@ -90,6 +88,14 @@ class CandidateOOSStatistics:
     alpha_decay_bps_per_window: Decimal | None
     mark_lag_microseconds: int
     observations: tuple[OOSValuationObservation, ...]
+
+    @property
+    def coverage(self) -> str:
+        return "complete"
+
+    @property
+    def observed_evaluation_count(self) -> int:
+        return len(self.observations)
 
     def as_dict(self) -> dict[str, Any]:
         return {
@@ -106,15 +112,11 @@ class CandidateOOSStatistics:
             "maximum_drawdown_pct": self.maximum_drawdown_pct,
             "annualized_sharpe_ratio": self.annualized_sharpe_ratio,
             "alpha_decay_method": _ALPHA_DECAY_METHOD,
-            "oos_pnl_slope_bps_per_window": (
-                None
-                if self.oos_pnl_slope_bps_per_window is None
-                else str(self.oos_pnl_slope_bps_per_window)
+            "oos_pnl_slope_bps_per_window": _optional_decimal_text(
+                self.oos_pnl_slope_bps_per_window
             ),
-            "alpha_decay_bps_per_window": (
-                None
-                if self.alpha_decay_bps_per_window is None
-                else str(self.alpha_decay_bps_per_window)
+            "alpha_decay_bps_per_window": _optional_decimal_text(
+                self.alpha_decay_bps_per_window
             ),
             "mark_lag_microseconds": self.mark_lag_microseconds,
             "observations": [item.as_dict() for item in self.observations],
@@ -182,15 +184,12 @@ def build_oos_statistics(
     code_revision: str,
     package_version: str | None = None,
 ) -> OOSStatisticsReport:
-    if not initial_equity_usd.is_finite() or initial_equity_usd <= 0:
-        raise ValueError("initial_equity_usd must be positive and finite")
-    if isinstance(periods_per_year, bool) or not 1 <= periods_per_year <= 1_000_000:
-        raise ValueError("periods_per_year must be in [1, 1000000]")
+    _validate_statistics_parameters(
+        initial_equity_usd,
+        periods_per_year,
+        code_revision,
+    )
     normalized_revision = code_revision.strip()
-    if not normalized_revision:
-        raise ValueError("code_revision cannot be empty")
-    if len(normalized_revision) > 160:
-        raise ValueError("code_revision is too long")
     selected_candidates = _unique_non_empty(candidate_ids, "candidate_ids")
     inputs_by_id = _valuation_input_index(valuation_inputs)
     matrix = load_experiment_matrix(matrix_path)
@@ -200,23 +199,10 @@ def build_oos_statistics(
     candidate_reports: list[CandidateOOSStatistics] = []
     expected_all: set[str] = set()
     for candidate_id in selected_candidates:
-        planned = tuple(
-            sorted(
-                (
-                    item
-                    for item in matrix.evaluations
-                    if item.candidate_id == candidate_id
-                ),
-                key=lambda item: item.window["index"],
-            )
-        )
-        if not planned:
-            raise ValueError(f"matrix does not contain candidate: {candidate_id}")
-        _validate_non_overlapping_test_windows(candidate_id, planned)
+        planned = _candidate_plan(matrix, candidate_id)
         expected_ids = {item.evaluation_id for item in planned}
         expected_all.update(expected_ids)
-        supplied_ids = expected_ids & set(inputs_by_id)
-        missing = sorted(expected_ids - supplied_ids)
+        missing = sorted(expected_ids - set(inputs_by_id))
         if missing:
             raise ValueError(
                 f"candidate {candidate_id} is missing valuation evidence: "
@@ -260,15 +246,43 @@ def build_oos_statistics(
         "code_revision": normalized_revision,
         "package_version": resolved_version,
     }
-    report_id = f"oos-report-{sha256_hex(canonical_json_bytes(identity))[:40]}"
     return OOSStatisticsReport(
-        report_id=report_id,
+        report_id=(
+            "oos-report-" + sha256_hex(canonical_json_bytes(identity))[:40]
+        ),
         matrix_sha256=matrix.semantic_sha256,
         code_revision=normalized_revision,
         package_version=resolved_version,
         periods_per_year=periods_per_year,
         candidates=tuple(candidate_reports),
     )
+
+
+def _candidate_plan(
+    matrix: ExperimentMatrixSnapshot,
+    candidate_id: str,
+) -> tuple[MatrixEvaluation, ...]:
+    planned = tuple(
+        sorted(
+            (
+                item
+                for item in matrix.evaluations
+                if item.candidate_id == candidate_id
+            ),
+            key=lambda item: item.window["index"],
+        )
+    )
+    if not planned:
+        raise ValueError(f"matrix does not contain candidate: {candidate_id}")
+    indexes = tuple(item.window["index"] for item in planned)
+    if len(set(indexes)) != len(indexes):
+        raise ValueError(f"candidate {candidate_id} contains duplicate window indexes")
+    for previous, current in pairwise(planned):
+        if previous.window["test_end"] > current.window["test_start"]:
+            raise ValueError(
+                f"candidate {candidate_id} contains overlapping test windows"
+            )
+    return planned
 
 
 def _build_candidate_statistics(
@@ -289,12 +303,12 @@ def _build_candidate_statistics(
 
     valuations: list[tuple[MatrixEvaluation, BundleValuationReport, int]] = []
     for item in planned:
-        registry_row = registry.get(item.evaluation_id)
-        if registry_row is None:
+        row = registry.get(item.evaluation_id)
+        if row is None:
             raise ValueError(
                 f"trusted registry is missing evaluation: {item.evaluation_id}"
             )
-        _verify_registry_binding(matrix, item, registry_row)
+        _verify_registry_binding(matrix, item, row)
         input_value = inputs_by_id[item.evaluation_id]
         record = load_evaluation_record(input_value.bundle_path)
         if record.get("evaluation_id") != item.evaluation_id:
@@ -305,21 +319,26 @@ def _build_candidate_statistics(
             code_revision=code_revision,
             package_version=package_version,
         )
-        if valuation.experiment_id != registry_row["experiment_id"]:
+        if valuation.experiment_id != row["experiment_id"]:
             raise ValueError(
                 "valuation experiment does not match trusted registry evidence: "
                 + item.evaluation_id
             )
-        if valuation.bundle_root_sha256 != registry_row["bundle_root_sha256"]:
+        if valuation.bundle_root_sha256 != row["bundle_root_sha256"]:
             raise ValueError(
                 "valuation bundle root does not match trusted registry evidence: "
                 + item.evaluation_id
             )
-        lag = _mark_lag_microseconds(
-            valuation.as_of,
-            valuation.last_dataset_event_at,
+        valuations.append(
+            (
+                item,
+                valuation,
+                _mark_lag_microseconds(
+                    valuation.as_of,
+                    valuation.last_dataset_event_at,
+                ),
+            )
         )
-        valuations.append((item, valuation, lag))
 
     lags = {lag for _, _, lag in valuations}
     if len(lags) != 1:
@@ -330,23 +349,50 @@ def _build_candidate_statistics(
     pnl_series = tuple(
         valuation.mark_to_market_pnl_usd for _, valuation, _ in valuations
     )
-    maximum_drawdown = _maximum_drawdown_pct(pnl_series, initial_equity_usd)
-    sharpe = _annualized_sharpe(
-        pnl_series,
-        initial_equity_usd,
-        periods_per_year,
-    )
     slope = _pnl_slope_bps_per_window(pnl_series, initial_equity_usd)
-    alpha_decay = None if slope is None else max(Decimal("0"), -slope)
+    observations, ending_equity = _observations(
+        valuations,
+        initial_equity_usd,
+    )
+    return CandidateOOSStatistics(
+        candidate_id=candidate_id,
+        candidate_config_sha256=candidate_hash,
+        expected_evaluation_count=len(planned),
+        initial_equity_usd=initial_equity_usd,
+        ending_equity_usd=ending_equity,
+        total_mark_to_market_pnl_usd=sum(pnl_series, Decimal("0")),
+        maximum_drawdown_pct=_maximum_drawdown_pct(
+            pnl_series,
+            initial_equity_usd,
+        ),
+        annualized_sharpe_ratio=_annualized_sharpe(
+            pnl_series,
+            initial_equity_usd,
+            periods_per_year,
+        ),
+        oos_pnl_slope_bps_per_window=slope,
+        alpha_decay_bps_per_window=(
+            None if slope is None else max(Decimal("0"), -slope)
+        ),
+        mark_lag_microseconds=mark_lag,
+        observations=observations,
+    )
 
-    observations: list[OOSValuationObservation] = []
-    equity = initial_equity_usd
+
+def _observations(
+    valuations: list[tuple[MatrixEvaluation, BundleValuationReport, int]],
+    initial_equity: Decimal,
+) -> tuple[tuple[OOSValuationObservation, ...], Decimal]:
+    result: list[OOSValuationObservation] = []
+    equity = initial_equity
     for item, valuation, lag in valuations:
-        period_return = None if equity <= 0 else float(
-            valuation.mark_to_market_pnl_usd / equity
+        period_return = (
+            None
+            if equity <= 0
+            else float(valuation.mark_to_market_pnl_usd / equity)
         )
         equity += valuation.mark_to_market_pnl_usd
-        observations.append(
+        result.append(
             OOSValuationObservation(
                 evaluation_id=item.evaluation_id,
                 experiment_id=valuation.experiment_id,
@@ -363,22 +409,7 @@ def _build_candidate_statistics(
                 period_return=period_return,
             )
         )
-    return CandidateOOSStatistics(
-        candidate_id=candidate_id,
-        candidate_config_sha256=candidate_hash,
-        coverage="complete",
-        expected_evaluation_count=len(planned),
-        observed_evaluation_count=len(observations),
-        initial_equity_usd=initial_equity_usd,
-        ending_equity_usd=equity,
-        total_mark_to_market_pnl_usd=sum(pnl_series, Decimal("0")),
-        maximum_drawdown_pct=maximum_drawdown,
-        annualized_sharpe_ratio=sharpe,
-        oos_pnl_slope_bps_per_window=slope,
-        alpha_decay_bps_per_window=alpha_decay,
-        mark_lag_microseconds=mark_lag,
-        observations=tuple(observations),
-    )
+    return tuple(result), equity
 
 
 def _load_registry_rows(
@@ -411,6 +442,7 @@ def _load_registry_rows(
         ).fetchall()
     finally:
         connection.close()
+
     result: dict[str, dict[str, Any]] = {}
     for row in rows:
         evaluation_id = str(row["evaluation_id"])
@@ -438,7 +470,7 @@ def _verify_registry_binding(
     planned: MatrixEvaluation,
     row: Mapping[str, Any],
 ) -> None:
-    expected = {
+    expected: dict[str, Any] = {
         "matrix_sha256": matrix.semantic_sha256,
         "candidate_id": planned.candidate_id,
         "candidate_config_sha256": planned.candidate_config_sha256,
@@ -451,20 +483,6 @@ def _verify_registry_binding(
             raise ValueError(
                 f"trusted registry {key} does not match matrix evaluation: "
                 + planned.evaluation_id
-            )
-
-
-def _validate_non_overlapping_test_windows(
-    candidate_id: str,
-    planned: tuple[MatrixEvaluation, ...],
-) -> None:
-    indexes = tuple(item.window["index"] for item in planned)
-    if len(set(indexes)) != len(indexes):
-        raise ValueError(f"candidate {candidate_id} contains duplicate window indexes")
-    for previous, current in zip(planned, planned[1:]):
-        if previous.window["test_end"] > current.window["test_start"]:
-            raise ValueError(
-                f"candidate {candidate_id} contains overlapping test windows"
             )
 
 
@@ -492,18 +510,31 @@ def _unique_non_empty(values: Sequence[str], name: str) -> tuple[str, ...]:
     return tuple(sorted(result))
 
 
+def _validate_statistics_parameters(
+    initial_equity: Decimal,
+    periods_per_year: int,
+    code_revision: str,
+) -> None:
+    if not initial_equity.is_finite() or initial_equity <= 0:
+        raise ValueError("initial_equity_usd must be positive and finite")
+    if isinstance(periods_per_year, bool) or not 1 <= periods_per_year <= 1_000_000:
+        raise ValueError("periods_per_year must be in [1, 1000000]")
+    if not code_revision.strip():
+        raise ValueError("code_revision cannot be empty")
+    if len(code_revision.strip()) > 160:
+        raise ValueError("code_revision is too long")
+
+
 def _mark_lag_microseconds(as_of: str, last_event_at: str) -> int:
-    mark_time = _timestamp(as_of)
-    event_time = _timestamp(last_event_at)
-    delta = mark_time - event_time
-    microseconds = (
+    delta = _timestamp(as_of) - _timestamp(last_event_at)
+    result = (
         delta.days * 86_400_000_000
         + delta.seconds * 1_000_000
         + delta.microseconds
     )
-    if microseconds < 0:
+    if result < 0:
         raise ValueError("terminal mark lag cannot be negative")
-    return microseconds
+    return result
 
 
 def _timestamp(value: str) -> datetime:
@@ -556,15 +587,16 @@ def _pnl_slope_bps_per_window(
     if len(pnl_series) < 3:
         return None
     values = tuple(pnl / initial_equity * _BPS for pnl in pnl_series)
-    count = Decimal(len(values))
     x_mean = Decimal(len(values) - 1) / Decimal("2")
-    y_mean = sum(values, Decimal("0")) / count
+    y_mean = sum(values, Decimal("0")) / Decimal(len(values))
     numerator = Decimal("0")
     denominator = Decimal("0")
     for index, value in enumerate(values):
         x_delta = Decimal(index) - x_mean
         numerator += x_delta * (value - y_mean)
         denominator += x_delta * x_delta
-    if denominator == 0:
-        return None
-    return numerator / denominator
+    return None if denominator == 0 else numerator / denominator
+
+
+def _optional_decimal_text(value: Decimal | None) -> str | None:
+    return None if value is None else str(value)
