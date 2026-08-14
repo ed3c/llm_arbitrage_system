@@ -37,7 +37,6 @@ from llm_arbitrage_system.experiments.signing import (
 )
 from llm_arbitrage_system.experiments.statistics_inputs import load_statistics_inputs
 from llm_arbitrage_system.experiments.statistics_signing import (
-    load_statistics_report,
     sign_statistics_report,
     verify_statistics_attestation,
 )
