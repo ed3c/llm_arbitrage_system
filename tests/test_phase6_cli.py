@@ -71,7 +71,20 @@ def test_phase6_cli_values_bundle_and_signs_statistics(tmp_path: Path) -> None:
     valuation_payload = json.loads(valuation.read_text(encoding="utf-8"))
     assert valuation_payload["metrics"]["mark_to_market_pnl_usd"]
     assert "realized_pnl_usd" not in valuation_payload["metrics"]
-    assert main(["value-bundle", "--bundle", str(bundle), "--marks", str(marks), "--output", str(valuation)]) == 2
+    assert (
+        main(
+            [
+                "value-bundle",
+                "--bundle",
+                str(bundle),
+                "--marks",
+                str(marks),
+                "--output",
+                str(valuation),
+            ]
+        )
+        == 2
+    )
 
     report = tmp_path / "statistics.json"
     write_json(report, _minimal_statistics_report())
@@ -118,7 +131,8 @@ def test_phase6_cli_values_bundle_and_signs_statistics(tmp_path: Path) -> None:
         )
         == 0
     )
-    assert load_statistics_report(report).report_id == _minimal_statistics_report()["report_id"]
+    expected_report_id = _minimal_statistics_report()["report_id"]
+    assert load_statistics_report(report).report_id == expected_report_id
 
     tampered = _minimal_statistics_report()
     tampered["periods_per_year"] = 365
@@ -230,8 +244,56 @@ def test_statistics_signing_rejects_noncanonical_report_and_wrong_key(
     first_public = tmp_path / "first/public.pem"
     second_private = tmp_path / "second/private.pem"
     second_public = tmp_path / "second/public.pem"
-    assert main(["keygen", "--private-key", str(first_private), "--public-key", str(first_public)]) == 0
-    assert main(["keygen", "--private-key", str(second_private), "--public-key", str(second_public)]) == 0
+    assert (
+        main(
+            [
+                "keygen",
+                "--private-key",
+                str(first_private),
+                "--public-key",
+                str(first_public),
+            ]
+        )
+        == 0
+    )
+    assert (
+        main(
+            [
+                "keygen",
+                "--private-key",
+                str(second_private),
+                "--public-key",
+                str(second_public),
+            ]
+        )
+        == 0
+    )
     attestation = tmp_path / "attestation.json"
-    assert main(["sign-statistics", "--report", str(report), "--private-key", str(first_private), "--output", str(attestation)]) == 0
-    assert main(["verify-statistics", "--report", str(report), "--attestation", str(attestation), "--trusted-public-key", str(second_public)]) == 2
+    assert (
+        main(
+            [
+                "sign-statistics",
+                "--report",
+                str(report),
+                "--private-key",
+                str(first_private),
+                "--output",
+                str(attestation),
+            ]
+        )
+        == 0
+    )
+    assert (
+        main(
+            [
+                "verify-statistics",
+                "--report",
+                str(report),
+                "--attestation",
+                str(attestation),
+                "--trusted-public-key",
+                str(second_public),
+            ]
+        )
+        == 2
+    )
