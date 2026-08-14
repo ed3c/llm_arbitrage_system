@@ -211,6 +211,76 @@ def test_the_wizard_refuses_a_mutable_acquisition_selector() -> None:
     assert "358702660" in source
 
 
+# --- reporting -----------------------------------------------------------
+#
+# The first version of this reporting path shipped a SyntaxError that only
+# fired when a lane was blocked, because nothing had ever rendered a blocked
+# receipt. These controls exist so that cannot recur.
+
+
+def test_explaining_an_admitted_receipt_lists_nothing() -> None:
+    assert admission.explain(_build(_all_pass())) == []
+
+
+def test_explaining_a_blocked_receipt_lists_every_non_passing_lane() -> None:
+    lanes = _all_pass()
+    lanes["organization_legal_approval"] = {"state": "NOT_EXERCISED", "detail": "no named approver"}
+    lanes["required_notices_review"] = {"state": "FAIL", "detail": "rejected by owner"}
+
+    lines = admission.explain(_build(lanes))
+
+    assert len(lines) == 2
+    assert any("organization_legal_approval" in line and "NOT_EXERCISED" in line for line in lines)
+    assert any("required_notices_review" in line and "FAIL" in line for line in lines)
+
+
+def test_explain_reports_in_the_required_lane_order() -> None:
+    lines = admission.explain(_build({}))
+
+    assert len(lines) == len(admission.REQUIRED_LANES)
+    order = [line.split()[1] for line in lines]
+    assert order == list(admission.REQUIRED_LANES)
+
+
+@pytest.mark.parametrize("mode", ["--result", "--explain"])
+def test_the_entrypoint_reads_a_blocked_receipt_without_crashing(tmp_path: Path, mode: str) -> None:
+    path = admission.write_receipt(_build({}), tmp_path)
+
+    completed = subprocess.run(
+        [sys.executable, str(BUILDER_PATH), mode, str(path)],
+        capture_output=True,
+        text=True,
+        timeout=120,
+        check=False,
+    )
+
+    assert completed.returncode == 0, completed.stderr
+    assert "Traceback" not in completed.stderr
+    if mode == "--result":
+        assert completed.stdout.strip() == "BLOCKED_TOOL_ADMISSION"
+    else:
+        assert completed.stdout.count("\n") == len(admission.REQUIRED_LANES)
+
+
+def test_reading_a_document_that_is_not_a_receipt_is_refused(tmp_path: Path) -> None:
+    impostor = tmp_path / "not-a-receipt.json"
+    impostor.write_text('{"schema": "something/else", "result": "PASS"}', encoding="utf-8")
+
+    with pytest.raises(ValueError):
+        admission.read_receipt(impostor)
+
+
+def test_the_wizard_reads_receipts_through_the_module_not_an_inline_snippet() -> None:
+    source = WIZARD_PATH.read_text(encoding="utf-8")
+
+    assert "admission_receipt.py" in source
+    assert "--result" in source
+    assert "--explain" in source
+    # An inline snippet is what broke before: quoting a nested f-string through
+    # the shell is not something to re-attempt.
+    assert "python3 -c" not in source
+
+
 def test_the_bundled_selftest_passes() -> None:
     completed = subprocess.run(
         [sys.executable, str(BUILDER_PATH), "--selftest"],

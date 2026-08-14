@@ -140,6 +140,24 @@ def _from_environment() -> dict[str, Any]:
     }
 
 
+def read_receipt(path: pathlib.Path) -> dict[str, Any]:
+    loaded = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(loaded, Mapping) or loaded.get("schema") != RECEIPT_SCHEMA:
+        raise ValueError(f"{path.name} is not a {RECEIPT_SCHEMA} document")
+    return dict(loaded)
+
+
+def explain(receipt: Mapping[str, Any]) -> list[str]:
+    """One line per lane that is not PASS, in reporting order."""
+
+    lanes = receipt["lanes"]
+    return [
+        f"    {lanes[name]['state']:<15} {name}  -  {lanes[name]['detail']}"
+        for name in REQUIRED_LANES
+        if name in lanes and lanes[name]["state"] != "PASS"
+    ]
+
+
 def _run_selftest() -> int:
     every_lane_passes = {name: {"state": "PASS", "detail": "ok"} for name in REQUIRED_LANES}
     admitted = build_receipt(
@@ -208,6 +226,20 @@ def _run_selftest() -> int:
         else:  # pragma: no cover - a silent pass here is the defect being guarded
             raise AssertionError(f"ledger line {bad!r} should have been rejected")
 
+    # The reporting path is exercised too. Its first version shipped a
+    # SyntaxError that only fired when a lane was blocked, because nothing
+    # rendered a blocked receipt.
+    import tempfile
+
+    with tempfile.TemporaryDirectory() as scratch:
+        blocked_path = write_receipt(partial, pathlib.Path(scratch))
+        reread = read_receipt(blocked_path)
+        assert reread["result"] == BLOCKED
+        lines = explain(reread)
+        assert len(lines) == len(REQUIRED_LANES) - 1, lines
+        assert all("NOT_EXERCISED" in line for line in lines)
+        assert explain(admitted) == []
+
     print("admission_receipt selftest: PASS", file=sys.stderr)
     return 0
 
@@ -218,9 +250,20 @@ def main(argv: Sequence[str] | None = None) -> int:
         description="Build the GT-01 host admission receipt from a lane ledger.",
     )
     parser.add_argument("--selftest", action="store_true")
+    parser.add_argument("--result", type=pathlib.Path, metavar="RECEIPT", help="print a receipt's result")
+    parser.add_argument(
+        "--explain", type=pathlib.Path, metavar="RECEIPT", help="list a receipt's non-PASS lanes"
+    )
     arguments = parser.parse_args(list(argv) if argv is not None else sys.argv[1:])
     if arguments.selftest:
         return _run_selftest()
+    if arguments.result is not None:
+        print(read_receipt(arguments.result)["result"])
+        return 0
+    if arguments.explain is not None:
+        for line in explain(read_receipt(arguments.explain)):
+            print(line)
+        return 0
 
     receipt = build_receipt(**_from_environment())
     path = write_receipt(receipt, pathlib.Path(os.environ["RECEIPT_DIR"]))

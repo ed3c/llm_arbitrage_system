@@ -492,22 +492,19 @@ _clear
 printf '\n%s%s  GT-01 admission receipt written%s\n\n' "$BOLD" "$BLUE" "$RESET"
 say "${RECEIPT_PATH#"${REPO_ROOT}/"}"
 printf '\n'
-RESULT="$(python3 -c 'import json,sys;print(json.load(open(sys.argv[1]))["result"])' "$RECEIPT_PATH")"
+# The receipt reader lives in the Python module, not in an inline snippet:
+# quoting a nested f-string through the shell is how the previous version of
+# this block shipped a SyntaxError that only fired on the blocked path.
+RESULT="$(python3 "${REPO_ROOT}/scripts/git-town/admission_receipt.py" --result "$RECEIPT_PATH")"
 if [[ "$RESULT" == "PASS" ]]; then
   printf '  %sADMISSION RESULT: PASS%s\n\n' "$GREEN" "$RESET"
   say "Every required lane passed. Point HOST_GIT_TOWN_BIN at the executable,"
   say "update docs/git/REPO_PROFILE.md and docs/git/GIT_TOWN_ADMISSION.md from"
   say "this receipt, then close issue #15."
 else
-  printf '  %sADMISSION RESULT: BLOCKED_TOOL_ADMISSION%s\n\n' "$YELLOW" "$RESET"
+  printf '  %sADMISSION RESULT: %s%s\n\n' "$YELLOW" "$RESULT" "$RESET"
   say "At least one required lane is not PASS. Still open:"
-  python3 -c '
-import json, sys
-receipt = json.load(open(sys.argv[1]))
-for name, lane in receipt["lanes"].items():
-    if lane["state"] != "PASS":
-        print(f"    {lane[\"state\"]:<15} {name}  —  {lane[\"detail\"]}")
-' "$RECEIPT_PATH"
+  python3 "${REPO_ROOT}/scripts/git-town/admission_receipt.py" --explain "$RECEIPT_PATH"
   say ""
   say "Re-run after those decisions are made; answers already given are kept."
 fi
