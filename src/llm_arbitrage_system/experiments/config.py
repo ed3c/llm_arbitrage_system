@@ -3,6 +3,7 @@ from __future__ import annotations
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 from decimal import Decimal, InvalidOperation
+from math import isfinite
 from pathlib import Path
 from typing import Any, cast
 
@@ -396,9 +397,15 @@ def _integer(payload: Mapping[str, Any], key: str, default: int) -> int:
 
 def _floating(payload: Mapping[str, Any], key: str, default: float) -> float:
     value = payload.get(key, default)
-    if isinstance(value, bool) or not isinstance(value, (int, float)):
+    if isinstance(value, bool) or not isinstance(value, (str, int, float)):
         raise ValueError(f"{key} must be a number")
-    return float(value)
+    try:
+        parsed = float(value)
+    except ValueError as error:
+        raise ValueError(f"{key} must be a number") from error
+    if not isfinite(parsed):
+        raise ValueError(f"{key} must be finite")
+    return parsed
 
 
 def _boolean(payload: Mapping[str, Any], key: str, default: bool) -> bool:
