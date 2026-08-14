@@ -4,7 +4,7 @@
 
 No branch creation, linked worktree mutation, Git Town command, publication proposal, or rollback begins without a complete task packet. Natural-language intent is not a substitute.
 
-Issue #16 owns the future typed validator. Until it merges, task packets are reviewed statically and live Worker execution remains blocked.
+Issue #16 owns the typed validator. It is implemented at `scripts/git-town/task_packet.py`; see `docs/harness/git-town-task-packet.md` for the mechanism contract. A validator `PASS` is a precondition for branch work, not an admission to act: live Worker execution stays blocked until the host-admission (#15), doctor (#17) and sync (#18) lanes exist.
 
 ## Required schema
 
@@ -173,9 +173,24 @@ Their issue bodies declare goal, non-goals, base/parent/head, stack class, allow
 
 Issues #15–#21 each own one molecular mechanism and one narrow path lease. A future implementation PR must copy the canonical issue fields into its PR body, bind them to exact heads, and update `STACKED_PRS.md` only through the designated convergence owner.
 
-## Receipt payload after validator implementation
+## Validator entrypoint
 
-Planned canonical output:
+```bash
+python scripts/git-town/task_packet.py --packet PACKET.yaml \
+  [--sibling-lease LEASE.json ...] \
+  [--emit-canonical CANONICAL.json] [--emit-lease LEASE.json]
+python scripts/git-town/task_packet.py --selftest
+```
+
+Stdout carries exactly one canonical receipt; the rejection reason goes to stderr so the receipt stays byte-stable. Exit status is `0` only for `PASS`.
+
+`--emit-lease` writes this packet's path-lease manifest, which is the same format `--sibling-lease` consumes. One admitted Worker's manifest is therefore the input that blocks the next Worker from claiming overlapping paths.
+
+The validator is offline. It never resolves issues or branches against GitHub or the local repository: issue resolution belongs to the publication gate (#20) and branch/worktree reality belongs to the doctor (#17). This file's identity and graph laws are checked for internal consistency only.
+
+## Receipt payload
+
+Canonical output:
 
 ```json
 {
@@ -191,4 +206,8 @@ Planned canonical output:
 }
 ```
 
-No task packet or receipt may contain secret values, private keys, account identifiers, credential-bearing URLs, browser sessions, or unbounded command output.
+On a rejection the same keys are emitted with every packet-derived field set to `null`, so a blocked receipt can never be mistaken for a thin `PASS`.
+
+`packet_sha256` is taken over the normalized packet, not the source bytes. Key order, list order and comments do not change it; a changed allowed path does.
+
+No task packet or receipt may contain secret values, private keys, account identifiers, credential-bearing URLs, browser sessions, or unbounded command output. The validator enforces the credential-URL and host-path rules mechanically and returns `BLOCKED_POLICY`.
