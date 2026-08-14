@@ -243,8 +243,12 @@ def run_sync(
         residue = {"process_group_reaped": True, "killed_on_timeout": False}
         timed_out = False
     except subprocess.TimeoutExpired:
-        residue = {**_reap_process_group(process), "killed_on_timeout": True}
+        group = _kill_process_group(process)
+        # communicate() first: an unreaped direct child stays a zombie, and a
+        # zombie keeps its process group alive, so polling before this would
+        # report a surviving group on every single timeout.
         stdout, stderr = process.communicate()
+        residue = {**_await_group_exit(group), "killed_on_timeout": True}
         timed_out = True
 
     return {
@@ -270,24 +274,34 @@ def run_sync(
     }
 
 
-def _reap_process_group(process: subprocess.Popen[str]) -> dict[str, Any]:
-    """Kill the tool's whole session and report honestly whether it died.
+def _kill_process_group(process: subprocess.Popen[str]) -> int | None:
+    """Signal the tool's whole session, not just the process we launched."""
+
+    import contextlib
+    import os
+    import signal
+
+    try:
+        group = os.getpgid(process.pid)
+    except ProcessLookupError:
+        return None
+    with contextlib.suppress(ProcessLookupError, PermissionError):
+        os.killpg(group, signal.SIGKILL)
+    return group
+
+
+def _await_group_exit(group: int | None) -> dict[str, Any]:
+    """Report honestly whether anything survived the kill.
 
     Residue is reported, never assumed away: a surviving process after a
     timeout is exactly the condition a cleanup lane exists to surface.
     """
 
-    import contextlib
     import os
-    import signal
     import time
 
-    try:
-        group = os.getpgid(process.pid)
-    except ProcessLookupError:
+    if group is None:
         return {"process_group_reaped": True}
-    with contextlib.suppress(ProcessLookupError, PermissionError):
-        os.killpg(group, signal.SIGKILL)
     for _ in range(100):
         try:
             os.killpg(group, 0)
