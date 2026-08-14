@@ -27,7 +27,7 @@ SYNC_PATH = REPOSITORY_ROOT / "scripts" / "git-town" / "sync.sh"
 STUB = """#!/usr/bin/env bash
 set -u
 if [ "${1:-}" = "--version" ]; then
-  printf 'git-town %s\\n' "${STUB_VERSION:-v24.0.0}"
+  printf '%s\\n' "${STUB_VERSION:-Git Town 24.0.0}"
   exit 0
 fi
 # Record the exact shape this invocation received so a test can assert which
@@ -658,3 +658,50 @@ def test_the_bundled_selftests_pass() -> None:
         )
         assert completed.returncode == 0, completed.stderr
         assert "PASS" in completed.stderr
+
+
+# --- version matching ----------------------------------------------------
+#
+# The first live run refused the very executable issue #15 had just admitted:
+# the pin is `v24.0.0` and `git-town --version` prints `Git Town 24.0.0`. The
+# stub had printed `git-town v24.0.0`, so the mismatch was invisible until a
+# real binary ran. These controls pin the real output shape.
+
+
+def test_the_real_version_output_shape_is_accepted() -> None:
+    # This is verbatim what git-town v24.0.0 prints on stdout.
+    assert receipt_module.version_output_matches("Git Town 24.0.0\n ")
+
+
+@pytest.mark.parametrize(
+    "reported",
+    [
+        "Git Town 24.0.0",
+        "git-town v24.0.0",
+        "git town version 24.0.0",
+        "  v24.0.0  ",
+    ],
+)
+def test_every_reasonable_spelling_of_the_admitted_version_is_accepted(reported: str) -> None:
+    assert receipt_module.version_output_matches(reported)
+
+
+@pytest.mark.parametrize(
+    "reported",
+    [
+        "Git Town 23.9.0",
+        "Git Town 25.0.0",
+        "Git Town 124.0.0",
+        "Git Town 24.0.01",
+        "Git Town 24.0.10",
+        "",
+    ],
+)
+def test_a_version_that_is_not_the_admitted_release_is_refused(reported: str) -> None:
+    assert not receipt_module.version_output_matches(reported)
+
+
+def test_the_stub_reports_the_same_shape_as_the_real_executable() -> None:
+    # If this drifts back to an invented format, the stub stops standing in for
+    # the tool and can hide the next mismatch the same way.
+    assert "Git Town 24.0.0" in STUB

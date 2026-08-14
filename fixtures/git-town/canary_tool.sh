@@ -14,7 +14,7 @@
 set -u
 
 if [ "${1:-}" = "--version" ]; then
-  printf 'git-town %s\n' "${CANARY_VERSION:-v24.0.0}"
+  printf '%s\n' "${CANARY_VERSION:-Git Town 24.0.0}"
   exit 0
 fi
 

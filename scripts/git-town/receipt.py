@@ -39,6 +39,11 @@ ROLLBACK_SCHEMA = "llm-arbitrage/rollback-proposal/v1"
 
 PERENNIAL_BRANCHES = ("main",)
 REQUIRED_GIT_TOWN_VERSION = "v24.0.0"
+# The policy pin carries a leading `v`; the executable prints "Git Town 24.0.0"
+# without one. Matching the pin literally rejected the very build issue #15
+# admitted, so the comparison is made on the bare version and both spellings are
+# accepted.
+REQUIRED_GIT_TOWN_VERSION_NUMBER = REQUIRED_GIT_TOWN_VERSION.lstrip("v")
 
 # docs/git/REPO_PROFILE.md sync.dry_run_command_shape / live_command_shape.
 BASE_SYNC_FLAGS = ("sync", "--stack", "--non-interactive", "--no-auto-resolve", "--no-push")
@@ -182,6 +187,20 @@ def command_shape(tool: Path, *, dry_run: bool) -> list[str]:
     return [str(tool), *flags]
 
 
+def version_output_matches(reported: str) -> bool:
+    """Does this `--version` output resolve to the admitted release?
+
+    Anchored on a word boundary so `24.0.0` does not match `124.0.0` or
+    `24.0.01`, and tolerant of the leading `v` because the pin carries one and
+    the executable does not.
+    """
+
+    number = re.escape(REQUIRED_GIT_TOWN_VERSION_NUMBER)
+    # `v?` sits inside the boundary so both `24.0.0` and `v24.0.0` match, while
+    # `124.0.0`, `24.0.01` and `24.0.10` still do not.
+    return re.search(rf"(?<![\w.])v?{number}(?![\w.])", reported) is not None
+
+
 def _admit_tool(tool: Path, environment: Mapping[str, str]) -> str:
     if not tool.is_file():
         raise SyncRejected(RESULT_BLOCKED_TOOL_ADMISSION, f"git town executable is absent: {tool.name}")
@@ -194,10 +213,11 @@ def _admit_tool(tool: Path, environment: Mapping[str, str]) -> str:
         env=dict(environment),
     )
     reported = f"{completed.stdout} {completed.stderr}"
-    if REQUIRED_GIT_TOWN_VERSION not in reported:
+    if not version_output_matches(reported):
         raise SyncRejected(
             RESULT_BLOCKED_TOOL_ADMISSION,
-            f"git town version output does not contain {REQUIRED_GIT_TOWN_VERSION}",
+            f"git town version output does not resolve to {REQUIRED_GIT_TOWN_VERSION}: "
+            f"{redact(reported).strip()[:120]}",
         )
     return REQUIRED_GIT_TOWN_VERSION
 
