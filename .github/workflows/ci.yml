@@ -92,3 +92,35 @@ jobs:
         run: python -m pip install -e ".[dev]"
       - name: Run compatibility tests
         run: pytest
+
+  git-town:
+    name: Git Town delivery mechanisms
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: pyproject.toml
+      - name: Install project
+        run: python -m pip install -e ".[dev]"
+      - name: Mechanism selftests
+        run: |
+          python scripts/git-town/task_packet.py --selftest
+          python scripts/git-town/lease.py --selftest
+          python scripts/git-town/receipt.py --selftest
+          python scripts/git-town/github_snapshot.py --selftest
+          python scripts/git-town/remote_verify.py --selftest
+          bash scripts/git-town/doctor.sh --selftest
+          bash scripts/git-town/sync.sh --selftest
+          bash scripts/git-town/publish.sh --selftest
+      - name: Mechanism and fail-closed controls
+        env:
+          GIT_TERMINAL_PROMPT: "0"
+          GIT_PAGER: cat
+          GIT_EDITOR: "true"
+        run: pytest tests/git-town
