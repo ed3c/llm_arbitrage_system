@@ -1,6 +1,6 @@
 PYTHON ?= python
 
-.PHONY: install lint typecheck test phase3-smoke check
+.PHONY: install lint typecheck test phase3-smoke phase4-smoke check
 
 install:
 	$(PYTHON) -m pip install -e ".[dev]"
@@ -22,5 +22,8 @@ phase3-smoke:
 	llm-arbitrage run --dataset examples/phase3/market_events.jsonl --config examples/phase3/experiment.yaml --output .phase3-runs --code-revision phase3-smoke
 	bundle=$$(find .phase3-runs -mindepth 1 -maxdepth 1 -type d -name 'exp-*' -print -quit); test -n "$$bundle"; llm-arbitrage verify "$$bundle"
 	llm-arbitrage plan-matrix --dataset examples/phase3/market_events.jsonl --config examples/phase3/experiment.yaml --sweep examples/phase3/sweep.yaml --output .phase3-runs/matrix.json
+
+phase4-smoke:
+	bash scripts/phase4_smoke.sh
 
 check: lint typecheck test
