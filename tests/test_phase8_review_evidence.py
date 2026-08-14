@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import json
 from pathlib import Path
 from typing import Any
 
@@ -227,6 +226,7 @@ trading_authorized: {trading_authorized}
 
 
 def _fixture(tmp_path: Path) -> dict[str, Path]:
+    tmp_path.mkdir(parents=True, exist_ok=True)
     policy = _policy(tmp_path / "policy.yaml")
     statistics = _statistics(tmp_path / "statistics.json")
     diagnostics_path = tmp_path / "diagnostics.json"
