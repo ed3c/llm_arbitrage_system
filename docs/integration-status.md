@@ -2,13 +2,13 @@
 
 ## Scope
 
-This file is the status source of truth for the merged Phase 1–4 implementation and the current documentation/Git-governance work. It distinguishes code that exists on `main` from issues that are open or planned.
+This file is the status source of truth for the merged Phase 1–8 implementation, the documentation/Git-governance layer, and the Git Town delivery mechanisms. It distinguishes code that exists on `main` from issues that are open, planned or blocked.
 
 Implementation baseline:
 
 ```text
 repository: ed3c/llm_arbitrage_system
-main:       55ecf0e9a91006f563a080661cb6adf650e2439a
+main:       2bcbeae05a9ea43497060d4cb61ad0a437c1bdb5
 mode:       offline, deterministic, paper-only
 ```
 
@@ -61,6 +61,13 @@ The PDF is a design source, not proof that every proposed external integration e
 | Phase 2B | [#4](https://github.com/ed3c/llm_arbitrage_system/pull/4) | `215ca9c7c81bea456a4e358a9d750a7157a9872b` | Append-only SQLite evidence, fail-closed lifecycle, performance reports, CI gates. |
 | Phase 3 | [#6](https://github.com/ed3c/llm_arbitrage_system/pull/6) | `e201e4b012e1596a7c470309cd2af792e009ee17` | Strict JSONL/YAML inputs, semantic identities, deterministic IDs, atomic bundles, verification, parameter grids, purged walk-forward plans. |
 | Phase 4 | [#10](https://github.com/ed3c/llm_arbitrage_system/pull/10) | `55ecf0e9a91006f563a080661cb6adf650e2439a` | Ed25519 attestations, lineage DAG, matrix-bound test execution, trusted immutable registry, coverage aggregation. |
+| CI prerequisite | [#26](https://github.com/ed3c/llm_arbitrage_system/pull/26) | `989ee49533bfaef1bbbb1b1462dc58cf71897e6f` | Canonical-config round trip accepts scientific-notation floats; strict Mypy baseline restored. Repaired a `main` that had been red. |
+| Documentation SSOT | [#22](https://github.com/ed3c/llm_arbitrage_system/pull/22), [#23](https://github.com/ed3c/llm_arbitrage_system/pull/23), [#24](https://github.com/ed3c/llm_arbitrage_system/pull/24) | `8a2b955`, `60bb437`, `b0e1e86` | Agent read order, integration/state/data-flow SSOT, Git Town governance and profile, README index. |
+| Phase 5 | [#31](https://github.com/ed3c/llm_arbitrage_system/pull/31), [#32](https://github.com/ed3c/llm_arbitrage_system/pull/32), [#33](https://github.com/ed3c/llm_arbitrage_system/pull/33) | `53b9a8b`, `96d387e`, `f8fe5f8` | Strict campaign contracts, durable SQLite state journal with interruption recovery, bounded runner, signed evaluations, trusted registration, campaign CLI and smoke. |
+| Phase 6 | [#39](https://github.com/ed3c/llm_arbitrage_system/pull/39), [#40](https://github.com/ed3c/llm_arbitrage_system/pull/40), [#41](https://github.com/ed3c/llm_arbitrage_system/pull/41) | `3af5bb5`, `3d96416`, `00b2fd1` | Strict terminal marks, deterministic bundle valuation, chronological trusted OOS statistics, valuation CLI and signed reports. |
+| Phase 7 | [#50](https://github.com/ed3c/llm_arbitrage_system/pull/50), [#52](https://github.com/ed3c/llm_arbitrage_system/pull/52), [#53](https://github.com/ed3c/llm_arbitrage_system/pull/53) | `ae45c60`, `31e6fc4`, `b54013b` | Preregistered selection policy, candidate stability and Holm family diagnostics, signed human-review dossier. Selection stays human-owned. |
+| Phase 8 | [#59](https://github.com/ed3c/llm_arbitrage_system/pull/59), [#60](https://github.com/ed3c/llm_arbitrage_system/pull/60), [#61](https://github.com/ed3c/llm_arbitrage_system/pull/61) | `8bb7459`, `d8a5a01`, `008fb92` | Strict research-review request contracts, signed independent reviewer evidence, non-deployable quorum envelope. Deployment and trading flags stay false. |
+| Git Town mechanisms | [#62](https://github.com/ed3c/llm_arbitrage_system/pull/62)–[#66](https://github.com/ed3c/llm_arbitrage_system/pull/66) | `955aa12`, `d38428c`, `f230887`, `dab0908`, `2bcbeae` | Task-packet validator, worktree/lease doctor, bounded no-push sync and receipts, fail-closed canaries, publication gate and remote verifier. |
 
 ## Merged implementation inventory
 
@@ -154,57 +161,95 @@ State: `MERGED`.
 
 Phase 4 creates detached provenance attestations, content-addressed lineage nodes, test-slice-only evaluation bundles, immutable registry imports, and cross-window coverage summaries. It does not authenticate the original market source or choose a profitable candidate.
 
-## Current documentation stack
+### Campaign, valuation, selection and review control plane
+
+```text
+src/llm_arbitrage_system/experiments/
+├── campaign.py                 Phase 5  strict campaign contracts
+├── campaign_store.py           Phase 5  durable state journal
+├── campaign_runner.py          Phase 5  bounded execution and registration
+├── valuation.py                Phase 6  terminal marks, bundle valuation
+├── oos_statistics.py           Phase 6  chronological trusted OOS statistics
+├── selection_policy.py         Phase 7  preregistered policy contracts
+├── selection_diagnostics.py    Phase 7  stability and Holm family diagnostics
+├── selection_dossier.py        Phase 7  signed human-review dossier
+├── selection_signing.py        Phase 7  dossier attestations
+├── decision_request.py         Phase 8  strict research-review requests
+├── review_evidence.py          Phase 8  signed independent reviewer records
+├── review_quorum.py            Phase 8  non-deployable quorum envelope
+└── operator_cli.py             Phase 7–8 fixed operator commands
+```
+
+State: `MERGED`.
+
+Each phase adds evidence, never authority. Phase 6 marks positions without claiming the mark is a realizable price. Phase 7 diagnoses stability and multiple-testing risk without selecting a candidate. Phase 8 records a human decision and keeps deployment, trading and release flags false.
+
+### Git Town delivery mechanisms
+
+```text
+scripts/git-town/
+├── task_packet.py              #16  typed packet and path-lease validator
+├── doctor.sh, lease.py         #17  linked-worktree admission and lease store
+├── sync.sh, receipt.py         #18  bounded no-push sync, verification, receipts
+├── publish.sh                  #20  publication gate driver
+├── github_snapshot.py          #20  trusted snapshot schema and gate decision
+└── remote_verify.py            #20  post-push head and ancestry verification
+
+fixtures/git-town/canary_tool.sh  #19  deterministic condition generator
+tests/git-town/                   #16–#20  mechanism selftests and controls
+```
+
+State: `MERGED` as mechanisms; `NOT_EXERCISED` as live lanes.
+
+Every entrypoint carries `--selftest`, and the `Git Town delivery mechanisms` CI job runs all of them plus `tests/git-town` on every push. None has ever run against a real Git Town executable: `HOST_GIT_TOWN_BIN` is unresolved, `live_execution_admitted` is `false`, and any real invocation returns `BLOCKED_TOOL_ADMISSION`.
+
+## Documentation stack (merged)
 
 Epic: [#11](https://github.com/ed3c/llm_arbitrage_system/issues/11).
 
-```text
-main
-└── docs/phase4-integration-ssot        issue #12  OPEN
-    └── docs/git-town-governance        issue #13  OPEN
-        └── docs/readme-state-flow-index issue #14  OPEN
-```
-
-| Issue | Owner paths | Purpose | State |
+| Issue / PR | Owner paths | Purpose | State |
 | --- | --- | --- | --- |
-| [#12](https://github.com/ed3c/llm_arbitrage_system/issues/12) | `AGENTS.md`, integration/state/data-flow docs | Agent routing and implementation SSOT | `OPEN` |
-| [#13](https://github.com/ed3c/llm_arbitrage_system/issues/13) | `.git-town.toml`, `docs/git/**`, `docs/harness/**`, issue/PR templates | Repository-owned Git Town governance | `OPEN` |
-| [#14](https://github.com/ed3c/llm_arbitrage_system/issues/14) | `README.md`, final stack index | Directory/State Machine/data-flow convergence | `OPEN` |
+| [#12](https://github.com/ed3c/llm_arbitrage_system/issues/12) / [#22](https://github.com/ed3c/llm_arbitrage_system/pull/22) | `AGENTS.md`, integration/state/data-flow docs | Agent routing and implementation SSOT | `MERGED` |
+| [#13](https://github.com/ed3c/llm_arbitrage_system/issues/13) / [#23](https://github.com/ed3c/llm_arbitrage_system/pull/23) | `.git-town.toml`, `docs/git/**`, `docs/harness/**`, issue/PR templates | Repository-owned Git Town governance | `MERGED` |
+| [#14](https://github.com/ed3c/llm_arbitrage_system/issues/14) / [#24](https://github.com/ed3c/llm_arbitrage_system/pull/24) | `README.md`, stack index | Directory/State Machine/data-flow convergence | `MERGED` |
 
-These branches and PR bases form a Git Town-compatible serial stack, but no local Git Town synchronization receipt is claimed by this documentation work.
+These branches and PR bases formed a Git Town-compatible serial stack, but no local Git Town synchronization receipt was produced: every merge was performed through GitHub under explicit human authorization.
 
-## Planned molecular Git Town leaves
+## Git Town molecular leaves
 
-| Issue | Planned branch | Dependency | Mechanism | State |
-| --- | --- | --- | --- | --- |
-| [#15](https://github.com/ed3c/llm_arbitrage_system/issues/15) | `infra/git-town-admission` | governance docs | exact Git Town host admission receipt | `PLANNED`, blocked on host/legal owners |
-| [#16](https://github.com/ed3c/llm_arbitrage_system/issues/16) | `tooling/git-town-task-packet-validator` | #15 | typed task-packet/path-lease validator | `PLANNED` |
-| [#17](https://github.com/ed3c/llm_arbitrage_system/issues/17) | `tooling/git-town-worktree-doctor` | #16 | linked-worktree and lease doctor | `PLANNED` |
-| [#18](https://github.com/ed3c/llm_arbitrage_system/issues/18) | `tooling/git-town-bounded-sync` | #15–#17 | dry-run + bounded no-push synchronization and receipts | `PLANNED` |
-| [#19](https://github.com/ed3c/llm_arbitrage_system/issues/19) | `test/git-town-fail-closed-canaries` | #18 | conflict/prompt/timeout/cleanup/rollback controls | `PLANNED` |
-| [#20](https://github.com/ed3c/llm_arbitrage_system/issues/20) | `tooling/git-town-publication-gate` | #18–#19 | GitHub publication gate and remote ancestry verification | `PLANNED` |
-| [#21](https://github.com/ed3c/llm_arbitrage_system/issues/21) | `convergence/git-town-adoption-audit` | #15–#20 | live adoption audit and convergence report | `PLANNED` |
+| Issue | Branch | Mechanism | State |
+| --- | --- | --- | --- |
+| [#15](https://github.com/ed3c/llm_arbitrage_system/issues/15) | `infra/git-town-admission` (never created) | exact Git Town host admission receipt | `BLOCKED` on a named host acquisition method and legal/transitive review owner |
+| [#16](https://github.com/ed3c/llm_arbitrage_system/issues/16) | `tooling/git-town-task-packet-validator` | typed task-packet/path-lease validator | `MERGED` |
+| [#17](https://github.com/ed3c/llm_arbitrage_system/issues/17) | `tooling/git-town-worktree-doctor` | linked-worktree and lease doctor | `MERGED` |
+| [#18](https://github.com/ed3c/llm_arbitrage_system/issues/18) | `tooling/git-town-bounded-sync` | dry-run + bounded no-push synchronization and receipts | `MERGED` |
+| [#19](https://github.com/ed3c/llm_arbitrage_system/issues/19) | `test/git-town-fail-closed-canaries` | conflict/prompt/timeout/cleanup/rollback controls | `MERGED` |
+| [#20](https://github.com/ed3c/llm_arbitrage_system/issues/20) | `tooling/git-town-publication-gate` | GitHub publication gate and remote ancestry verification | `MERGED` |
+| [#21](https://github.com/ed3c/llm_arbitrage_system/issues/21) | `convergence/git-town-adoption-audit` | live adoption audit and convergence report | `PLANNED`, depends on #15 and a live run |
 
-No file under `scripts/git-town/`, no Git Town receipt store, and no publication gate exists at this baseline. Those mechanisms remain `NOT_IMPLEMENTED` until their owning issues merge.
+`#16` declared `infra/git-town-admission` as its parent. That branch was never created, because `#15` is blocked on human decisions. The tooling stack parented onto the documentation stack instead and asserts no `#15` lane.
 
 ## Requirement matrix
 
 | Requirement | Current state | Evidence / owner |
 | --- | --- | --- |
-| Agent mandatory read order | `OPEN` | issue #12 |
-| Directory-to-State Machine ownership | `OPEN` | issue #12, converged by #14 |
-| Runtime/evidence/trust data-flow documentation | `OPEN` | issue #12, converged by #14 |
-| Shared Skill referenced without local shadow copy | `OPEN` | issue #13 |
-| Repository Git Town profile and config | `OPEN` | issue #13 |
-| Exact Git Town version pin | `OPEN` | issue #13 |
+| Agent mandatory read order | `MERGED` | `AGENTS.md` |
+| Directory-to-State Machine ownership | `MERGED` | `README.md`, `docs/state-machines.md` |
+| Runtime/evidence/trust data-flow documentation | `MERGED` | `docs/data-flow.md` |
+| Shared Skill referenced without local shadow copy | `MERGED` | `docs/git/README.md`, `AGENTS.md` |
+| Repository Git Town profile and config | `MERGED` | `.git-town.toml`, `docs/git/REPO_PROFILE.md` |
+| Exact Git Town version pin | `MERGED` | `docs/git/GIT_TOWN_ADMISSION.md` |
 | Host executable digest/provenance/SBOM/notices/legal receipt | `NOT_EXERCISED` | issue #15 |
-| Eval-first task-packet validator | `NOT_IMPLEMENTED` | issue #16 |
-| Linked-worktree and path-lease doctor | `NOT_IMPLEMENTED` | issue #17 |
-| Bounded no-push synchronization wrapper | `NOT_IMPLEMENTED` | issue #18 |
-| Conflict/timeout/rollback canaries | `NOT_IMPLEMENTED` | issue #19 |
-| GitHub publication gate | `NOT_IMPLEMENTED` | issue #20 |
+| Eval-first task-packet validator | `MERGED` | `scripts/git-town/task_packet.py` |
+| Linked-worktree and path-lease doctor | `MERGED` | `scripts/git-town/doctor.sh`, `lease.py` |
+| Bounded no-push synchronization wrapper | `MERGED` | `scripts/git-town/sync.sh`, `receipt.py` |
+| Conflict/timeout/rollback canaries | `MERGED` | `tests/git-town/test_fail_closed_canaries.py` |
+| GitHub publication gate | `MERGED` | `scripts/git-town/publish.sh`, `github_snapshot.py` |
+| Live Git Town synchronization | `NOT_EXERCISED` | issues #15 and #21 |
 | Live Git Town adoption audit | `NOT_EXERCISED` | issue #21 |
 | Live exchange/broker execution | `BLOCKED` | repository safety policy |
+
+A `MERGED` mechanism row means the mechanism and its disagreement-producing controls exist and pass in CI. It does not promote any live lane: `NOT_EXERCISED` rows stay `NOT_EXERCISED`.
 
 ## Verification baseline
 
@@ -214,9 +259,16 @@ The merged repository has fixed commands:
 make check
 make phase3-smoke
 make phase4-smoke
+bash scripts/phase5_smoke.sh
+bash scripts/phase6_smoke.sh
+bash scripts/phase7_smoke.sh
+bash scripts/phase8_smoke.sh
+pytest tests/git-town
 ```
 
-The Phase 4 merge commit added the Phase 4 smoke to CI. A future documentation PR must use current exact-head workflow evidence rather than reusing the merge commit's result.
+CI runs three jobs: `Quality gates (Python 3.13)` (ruff, strict mypy, pytest with the coverage floor, and the phase 3–8 smokes), `Python 3.10/3.11/3.12` compatibility, and `Git Town delivery mechanisms` (every `--selftest` plus `tests/git-town`).
+
+Evidence must come from the exact head under review. Reusing an older commit's green result is the failure mode `scripts/git-town/github_snapshot.py` refuses as `BLOCKED_STALE_EVIDENCE`.
 
 The commands above verify repository behavior. They do not prove:
 

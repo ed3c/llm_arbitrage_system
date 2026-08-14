@@ -7,10 +7,10 @@ This document maps repository directories to the State Machines they own. A Stat
 Status baseline:
 
 ```text
-main@55ecf0e9a91006f563a080661cb6adf650e2439a
+main@2bcbeae05a9ea43497060d4cb61ad0a437c1bdb5
 ```
 
-The first three machines below are merged runtime behavior. The final Git delivery machine is a repository-governance specification whose live adapter is not yet implemented.
+SM-01 through SM-13 and SM-15 through SM-18 are merged behavior. SM-14, the Git delivery machine, has merged adapters and controls but no live lane: its transitions have never been driven by a real Git Town executable.
 
 ## Cross-layer contract graph
 
@@ -41,9 +41,30 @@ Verified evidence bundle
   │ signer / lineage / registry
   ▼
 Attestation + lineage node + experiment/evaluation registration
+  │ campaign runner (SM-15)
+  ▼
+Registered campaign evaluations
+  │ terminal marks + valuation (SM-16)
+  ▼
+Signed OOS statistics report
+  │ preregistered policy + diagnostics (SM-17)
+  ▼
+Signed human-review dossier
+  │ decision request + reviewer quorum (SM-18)
+  ▼
+Research-only review quorum envelope
 ```
 
-The graph is directional. Strategy planning cannot call execution; execution cannot approve itself; reporting cannot change stored evidence; signing cannot change bundle bytes; aggregation cannot choose a candidate.
+The graph is directional. Strategy planning cannot call execution; execution cannot approve itself; reporting cannot change stored evidence; signing cannot change bundle bytes; aggregation cannot choose a candidate; diagnostics cannot select; and a sealed review envelope cannot authorize deployment, trading or release.
+
+Machine index:
+
+```text
+SM-01 … SM-07   runtime, evidence and reporting
+SM-08 … SM-13   experiments, provenance, lineage, trusted registry
+SM-14           Git Town Worker delivery
+SM-15 … SM-18   campaigns, valuation, selection governance, separation of duties
+```
 
 ## SM-01 — Analytics feature state
 
@@ -502,13 +523,14 @@ receipts/git-town/                            append-only evidence
 Current implementation state at the baseline:
 
 ```text
-tracked policy/configuration: OPEN in issues #12–#14
+tracked policy/configuration: MERGED (#12-#14)
 host admission receipt:       NOT_EXERCISED (#15)
-task-packet validator:        NOT_IMPLEMENTED (#16)
-worktree/lease doctor:        NOT_IMPLEMENTED (#17)
-bounded sync/receipts:        NOT_IMPLEMENTED (#18)
-fail-closed canaries:         NOT_IMPLEMENTED (#19)
-publication gate:             NOT_IMPLEMENTED (#20)
+task-packet validator:        MERGED mechanism (#16)
+worktree/lease doctor:        MERGED mechanism (#17)
+bounded sync/receipts:        MERGED mechanism (#18)
+fail-closed canaries:         MERGED mechanism (#19)
+publication gate:             MERGED mechanism (#20)
+live Git Town synchronization: NOT_EXERCISED (#15, #21)
 live adoption audit:          NOT_EXERCISED (#21)
 ```
 
@@ -538,6 +560,107 @@ REMOTE_VERIFIED
 ```
 
 A successful local sync never skips local verification, publication admission, remote verification, CI, or Human Admit.
+
+Mechanism state as of `main@2bcbeae`: the adapters in `scripts/git-town/` exist and their controls pass in CI, but no transition above has ever been driven by a real Git Town executable. `HOST_GIT_TOWN_BIN` is unresolved, so `run_sync` returns `BLOCKED_TOOL_ADMISSION` before reaching `LOCAL_SYNCED`.
+
+## SM-15 — Campaign execution and durable recovery
+
+Owners:
+
+```text
+experiments/campaign.py
+experiments/campaign_store.py
+experiments/campaign_runner.py
+```
+
+```text
+CAMPAIGN_DECLARED
+  → content-addressed manifest bound to matrix, policy, code revision, signer
+CAMPAIGN_REGISTERED
+  ├── bounded batch of planned evaluations → EVALUATION_RUNNING
+  ├── interruption → recovered from the durable journal, never restarted blind
+  └── failure policy exceeded → CAMPAIGN_STOPPED
+EVALUATION_COMPLETED
+  → detached signature + trusted registry registration
+CAMPAIGN_TERMINAL
+```
+
+Terminal evidence is immutable. Re-running an already registered evaluation reuses the existing trusted evidence instead of producing a second identity. Selection, realized PnL, Sharpe and alpha decay stay unset.
+
+## SM-16 — Terminal marks and OOS valuation
+
+Owners:
+
+```text
+experiments/valuation.py
+experiments/oos_statistics.py
+```
+
+```text
+MARKS_DECLARED
+  → strict Decimal prices, one timezone-aware as_of, exact open-position coverage
+MARKS_ADMITTED
+  ├── missing position coverage → BLOCKED
+  └── float-encoded money → BLOCKED
+BUNDLE_VALUED
+  → chronological ordering across the campaign
+OOS_STATISTICS_REPORTED
+  → signed statistical report
+```
+
+A mark is an observation, not a realizable price. The report never asserts that a valued position could have been closed at that mark.
+
+## SM-17 — Preregistered selection governance
+
+Owners:
+
+```text
+experiments/selection_policy.py
+experiments/selection_diagnostics.py
+experiments/selection_dossier.py
+experiments/selection_signing.py
+```
+
+```text
+POLICY_PREREGISTERED
+  → content-addressed identity bound to an exact matrix family
+CANDIDATES_DIAGNOSED
+  ├── cross-window stability
+  └── Holm family multiple-testing correction
+DOSSIER_BUILT
+  → signed, immutable, human-review-only
+HUMAN_REVIEW_PENDING
+```
+
+The machine has no `SELECTED` state. It diagnoses and presents; a human decides. A policy registered after seeing the diagnostics is not preregistered, and the content-addressed identity is what makes that checkable.
+
+## SM-18 — Separation of duties for a research decision
+
+Owners:
+
+```text
+experiments/decision_request.py
+experiments/review_evidence.py
+experiments/review_quorum.py
+```
+
+```text
+REQUEST_ISSUED
+  → exact signed-dossier reference, fixed proposer role, time bound
+REVIEWS_COLLECTED
+  → each an independently signed record from a distinct reviewer identity
+QUORUM_EVALUATED
+  ├── insufficient distinct reviewers → BLOCKED
+  └── quorum met → ENVELOPE_SEALED
+```
+
+`ENVELOPE_SEALED` is research-only, and the machine fails closed in both directions:
+
+- an incoming request that sets `deployment_authorized` or `trading_authorized` is **rejected**, not silently downgraded (`decision_request.py` raises `cannot authorize deployment` / `cannot authorize trading`);
+- a request must carry a null `decision`, so the request cannot pre-decide its own outcome;
+- the emitted quorum envelope reports `deployment_authorized`, `trading_authorized` and `release_authorized` as `false`.
+
+There is no transition anywhere in this machine that sets an authorization flag true. Promotion is a human act outside the repository.
 
 ## Forbidden cross-machine shortcuts
 

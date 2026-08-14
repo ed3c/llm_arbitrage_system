@@ -465,31 +465,31 @@ Issue / eval-first task packet
   └── human-owned operations
         │
         ▼
-Task-packet validator                       NOT_IMPLEMENTED (#16)
+Task-packet validator                       MERGED mechanism (#16)
         │
         ▼
 Exact Git Town host admission               NOT_EXERCISED (#15)
         │
         ▼
-Linked worktree + branch/path leases        NOT_IMPLEMENTED (#17)
+Linked worktree + branch/path leases        MERGED mechanism (#17)
         │
         ▼
-Dry-run bounded stack sync                  NOT_IMPLEMENTED (#18)
+Dry-run bounded stack sync                  MERGED mechanism (#18)
 `--stack --dry-run --non-interactive --no-auto-resolve --no-push`
         │
         ▼
-Bounded no-push sync                        NOT_IMPLEMENTED (#18)
+Bounded no-push sync                        MERGED mechanism (#18)
         │
         ├── semantic conflict → stop/preserve evidence (#19)
         ▼
 Independent ancestry/path verification
-+ exact-head evals + controls               NOT_IMPLEMENTED (#18/#19)
++ exact-head evals + controls               MERGED mechanism (#18/#19)
         │
         ▼
-Publication gate for one intent             NOT_IMPLEMENTED (#20)
+Publication gate for one intent             MERGED mechanism (#20)
         │
         ▼
-Remote fetch/head/ancestry verification     NOT_IMPLEMENTED (#20)
+Remote fetch/head/ancestry verification     MERGED mechanism (#20)
         │
         ▼
 GitHub trusted check
@@ -511,6 +511,44 @@ main
 
 This proves the Git object/PR dependency graph after publication. It does not claim that a local admitted Git Town executable synchronized the stack; that lane remains `NOT_EXERCISED` until issue #21.
 
+## 7b. Campaign, valuation, selection and review flow
+
+```text
+matrix + policy + code revision + signer
+  │ campaign.py            strict contracts, content-addressed manifest
+  ▼
+campaign manifest
+  │ campaign_store.py      durable SQLite journal; recover_interrupted on restart
+  ▼
+bounded batch of planned evaluations
+  │ campaign_runner.py     Phase 4 run-evaluation, sign, register
+  ▼
+registered trusted evaluations            (re-registration → already_registered)
+  │ valuation.py           strict terminal marks, exact open-position coverage
+  ▼                        money as string/integer; a float is rejected
+valued bundles
+  │ oos_statistics.py      chronological across the campaign
+  ▼
+signed OOS statistics report
+  │ selection_policy.py    policy preregistered and content-addressed
+  │ selection_diagnostics.py  cross-window stability + Holm family correction
+  ▼
+diagnostics report                        (no candidate is selected here)
+  │ selection_dossier.py + selection_signing.py
+  ▼
+signed immutable human-review dossier
+  │ decision_request.py    exact dossier reference, null decision, time bound
+  │ review_evidence.py     independently signed records, distinct reviewers
+  │ review_quorum.py       quorum evaluation
+  ▼
+research-only quorum envelope             (deployment/trading/release = false)
+  │
+  ▼
+HUMAN decision, outside this repository
+```
+
+Each arrow adds evidence and narrows what may be claimed. None of them adds authority: a request that arrives already asserting `deployment_authorized` or `trading_authorized` is rejected rather than downgraded, and no code path sets an authorization flag true.
+
 ## 8. Directory-to-data contract index
 
 | Directory | Consumes | Produces | Durable output |
@@ -522,9 +560,14 @@ This proves the Git object/PR dependency graph after publication. It does not cl
 | `reporting/` | approved plans and results | evidence-bounded metrics | JSON in journal/bundle |
 | `experiments/` Phase 3 | raw dataset/config/revision | identities, bundle, matrix | bundle directory / matrix JSON |
 | `experiments/` Phase 4 | bundle, keys, lineage, matrix | attestations, evaluation bundles, registry rows, aggregate | detached JSON / SQLite registry |
+| `experiments/` Phase 5 | matrix, policy, signer | campaign manifest, durable state journal, registered evaluations | SQLite campaign store / registry |
+| `experiments/` Phase 6 | registered evaluations + terminal marks | valued bundles, chronological OOS statistics | signed JSON reports |
+| `experiments/` Phase 7 | statistics + preregistered policy | stability/Holm diagnostics, signed review dossier | detached JSON attestations |
+| `experiments/` Phase 8 | signed dossier + reviewer records | decision request, review evidence, quorum envelope | detached JSON attestations |
 | `docs/git/` | shared Skill + repo policy + issue graph | profile, stack plan, worker/publication rules | tracked Markdown/TOML |
-| `docs/harness/` | task packet and mechanisms | assertions, controls, evidence requirements | tracked Markdown; receipts planned |
-| `scripts/git-town/` | admitted tool + task packet + leases | bounded Git operations and receipts | `NOT_IMPLEMENTED` at baseline |
+| `docs/harness/` | task packet and mechanisms | assertions, controls, evidence requirements | tracked Markdown |
+| `scripts/git-town/` | admitted tool + task packet + leases | bounded Git operations, decisions and receipts | `receipts/git-town/` when run; the tool is unadmitted, so no receipt exists |
+| `fixtures/git-town/` | a selected condition | a deterministic conflict/prompt/timeout/residue | none; test-only |
 
 ## 9. Evidence lanes that must remain separate
 
