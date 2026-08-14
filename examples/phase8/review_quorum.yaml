@@ -1,0 +1,25 @@
+schema_version: 1
+scope: research_review_only
+minimum_distinct_reviewers: 2
+
+request:
+  path: request.yaml
+  attestation: request.attestation.json
+  trusted_public_key: requester.public.pem
+
+dossier:
+  path: dossier.json
+  attestation: dossier.attestation.json
+  trusted_public_key: dossier.public.pem
+
+reviews:
+  - record: reviewer-a.yaml
+    attestation: reviewer-a.attestation.json
+    trusted_public_key: reviewer-a.public.pem
+  - record: reviewer-b.yaml
+    attestation: reviewer-b.attestation.json
+    trusted_public_key: reviewer-b.public.pem
+
+deployment_authorized: false
+trading_authorized: false
+release_authorized: false

@@ -1,0 +1,27 @@
+schema_version: 1
+matrix_sha256: b82cadbc214144710becc3f9cf3d3791d504687124308ed964704b2b07e40232
+decision_mode: human_review_only
+
+objective:
+  metric: total_mark_to_market_pnl_usd
+  direction: maximize
+  tie_breakers:
+    - maximum_drawdown_pct
+    - alpha_decay_bps_per_window
+
+admission:
+  minimum_candidates: 2
+  minimum_windows_per_candidate: 3
+  require_complete_coverage: true
+  require_equal_window_indexes: true
+  require_equal_test_intervals: true
+  require_equal_mark_lag: true
+  maximum_drawdown_pct: "25"
+  minimum_positive_window_fraction: "0.5"
+  maximum_alpha_decay_bps_per_window: "100"
+
+multiple_testing:
+  method: holm_sign_test
+  family_alpha: "0.05"
+  minimum_non_tied_pairwise_windows: 3
+  require_adjusted_pairwise_evidence: false
