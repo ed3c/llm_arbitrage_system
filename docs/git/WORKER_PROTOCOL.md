@@ -13,7 +13,7 @@ worktree/lease doctor:   IMPLEMENTED (#17)   scripts/git-town/doctor.sh, lease.p
 bounded sync/receipts:   IMPLEMENTED (#18)   scripts/git-town/sync.sh, receipt.py
 fail-closed canaries:    NOT_IMPLEMENTED (#19)
 publication gate:        NOT_IMPLEMENTED (#20)
-live adoption audit:     NOT_EXERCISED (#21)
+live adoption audit:     sync PASS, publication NOT_EXERCISED (#21)
 ```
 
 `IMPLEMENTED` means the mechanism and its mutation controls exist and pass; it does not mean the lane was exercised against a live Git Town run. Until the remaining owner issues merge and their exact-subject receipts pass, live Worker execution still returns `BLOCKED_TOOL_ADMISSION` — host admission (#15) is unexercised, so `live_execution_admitted` remains `false` in `docs/git/REPO_PROFILE.md`.

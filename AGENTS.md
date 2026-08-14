@@ -37,7 +37,7 @@ Two Git Town issues remain open, and neither is blocked on code:
 
 ```text
 #15  exact host tool admission   PASS     darwin_arm64, receipt eda73fcc
-#21  live adoption audit         PLANNED  needs a real Git Town run and Human Admit
+#21  live adoption audit         sync lane PASS; publication lanes NOT_EXERCISED
 ```
 
 **The mechanisms exist and the tool is admitted; the live lanes are still unobserved.** Every `scripts/git-town/` entrypoint has a selftest and disagreement-producing controls that run in CI. Git Town `v24.0.0` is admitted for `darwin_arm64` by receipt `eda73fcc`, so `live_execution_admitted` is now `true` in `docs/git/REPO_PROFILE.md` for that host — but no adapter has yet been observed driving a real Git Town synchronization, publication or adoption. Do not read a passing mechanism test, or the admission receipt, as evidence that any of those happened; that observation belongs to issue #21.

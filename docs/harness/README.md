@@ -12,7 +12,7 @@ worktree/lease doctor: NOT_IMPLEMENTED (#17)
 bounded sync/receipts: NOT_IMPLEMENTED (#18)
 fail-closed canaries: NOT_IMPLEMENTED (#19)
 publication gate: NOT_IMPLEMENTED (#20)
-live convergence audit: NOT_EXERCISED (#21)
+live convergence audit: sync PASS, publication NOT_EXERCISED (#21)
 ```
 
 Tracked Markdown defines the acceptance contract. It is not a selftest receipt.

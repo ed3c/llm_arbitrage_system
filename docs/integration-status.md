@@ -225,7 +225,7 @@ These branches and PR bases formed a Git Town-compatible serial stack, but no lo
 | [#18](https://github.com/ed3c/llm_arbitrage_system/issues/18) | `tooling/git-town-bounded-sync` | dry-run + bounded no-push synchronization and receipts | `MERGED` |
 | [#19](https://github.com/ed3c/llm_arbitrage_system/issues/19) | `test/git-town-fail-closed-canaries` | conflict/prompt/timeout/cleanup/rollback controls | `MERGED` |
 | [#20](https://github.com/ed3c/llm_arbitrage_system/issues/20) | `tooling/git-town-publication-gate` | GitHub publication gate and remote ancestry verification | `MERGED` |
-| [#21](https://github.com/ed3c/llm_arbitrage_system/issues/21) | `convergence/git-town-adoption-audit` | live adoption audit and convergence report | `PLANNED`, depends on #15 and a live run |
+| [#21](https://github.com/ed3c/llm_arbitrage_system/issues/21) | `fix/git-town-version-match` | live adoption audit and convergence report | sync lane `PASS`, publication lanes `NOT_EXERCISED` |
 
 `#16` declared `infra/git-town-admission` as its parent. That branch was never created, because `#15` is blocked on human decisions. The tooling stack parented onto the documentation stack instead and asserts no `#15` lane.
 
@@ -245,8 +245,8 @@ These branches and PR bases formed a Git Town-compatible serial stack, but no lo
 | Bounded no-push synchronization wrapper | `MERGED` | `scripts/git-town/sync.sh`, `receipt.py` |
 | Conflict/timeout/rollback canaries | `MERGED` | `tests/git-town/test_fail_closed_canaries.py` |
 | GitHub publication gate | `MERGED` | `scripts/git-town/publish.sh`, `github_snapshot.py` |
-| Live Git Town synchronization | `NOT_EXERCISED` | issues #15 and #21 |
-| Live Git Town adoption audit | `NOT_EXERCISED` | issue #21 |
+| Live Git Town synchronization | `PASS` for `darwin_arm64` | receipt `c5b39f8c` |
+| Live Git Town publication lane | `NOT_EXERCISED` | issue #21, `docs/git/ADOPTION_AUDIT.md` |
 | Live exchange/broker execution | `BLOCKED` | repository safety policy |
 
 A `MERGED` mechanism row means the mechanism and its disagreement-producing controls exist and pass in CI. It does not promote any live lane: `NOT_EXERCISED` rows stay `NOT_EXERCISED`.
