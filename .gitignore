@@ -13,4 +13,8 @@ state/
 .kill-switch
 .phase3-runs/
 experiment-runs/
+.phase4-runs/
+.phase4-keys/
+*.attestation.json
+*.registry.sqlite3
 .DS_Store
