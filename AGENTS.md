@@ -36,12 +36,11 @@ Epic #11 tracked the documentation stack (issues #12–#14, all merged). Issues 
 Two Git Town issues remain open, and neither is blocked on code:
 
 ```text
-#15  exact host tool admission   BLOCKED  needs a named host acquisition method
-                                          and a legal/transitive review owner
-#21  live adoption audit         PLANNED  needs #15 and a real Git Town run
+#15  exact host tool admission   PASS     darwin_arm64, receipt eda73fcc
+#21  live adoption audit         PLANNED  needs a real Git Town run and Human Admit
 ```
 
-**The mechanisms exist; the live lanes do not.** Every `scripts/git-town/` entrypoint has a selftest and disagreement-producing controls that run in CI, but none has ever executed against a real Git Town binary: `HOST_GIT_TOWN_BIN` is unresolved, `live_execution_admitted` is `false` in `docs/git/REPO_PROFILE.md`, and any real invocation returns `BLOCKED_TOOL_ADMISSION`. Do not read a passing mechanism test as evidence that Git Town synchronization, publication, or adoption has been exercised.
+**The mechanisms exist and the tool is admitted; the live lanes are still unobserved.** Every `scripts/git-town/` entrypoint has a selftest and disagreement-producing controls that run in CI. Git Town `v24.0.0` is admitted for `darwin_arm64` by receipt `eda73fcc`, so `live_execution_admitted` is now `true` in `docs/git/REPO_PROFILE.md` for that host — but no adapter has yet been observed driving a real Git Town synchronization, publication or adoption. Do not read a passing mechanism test, or the admission receipt, as evidence that any of those happened; that observation belongs to issue #21.
 
 A second Phase 7 decomposition (issues #42–#45, PRs #51 and #54) was closed as superseded: it collided add/add with #50/#52 on three files, and the surviving lane is the one Phase 8 was built on.
 

@@ -96,7 +96,7 @@ main@2bcbeae05a9ea43497060d4cb61ad0a437c1bdb5
 | Git Town governance/profile | issue #13 / [PR #23](https://github.com/ed3c/llm_arbitrage_system/pull/23) | `MERGED` |
 | README convergence/index | issue #14 / [PR #24](https://github.com/ed3c/llm_arbitrage_system/pull/24) | `MERGED` |
 | Git Town delivery mechanisms | issues #16–#20 / PRs [#62](https://github.com/ed3c/llm_arbitrage_system/pull/62)–[#66](https://github.com/ed3c/llm_arbitrage_system/pull/66) | `MERGED` as mechanisms, `NOT_EXERCISED` as live lanes |
-| Git Town host admission | issue #15 | `BLOCKED` on host acquisition and a named legal/transitive owner |
+| Git Town host admission | issue #15 | `PASS` for `darwin_arm64`, receipt `eda73fcc` |
 | Live Git Town adoption audit | issue #21 | `NOT_EXERCISED` |
 | Live exchange/broker execution | prohibited | `BLOCKED` |
 
@@ -229,7 +229,7 @@ llm_arbitrage_system/
 | `aggregation.py` | coverage summary | matrix + registrations | none/partial/complete coverage | JSON output | selection/PnL/Sharpe/alpha stay null |
 | `docs/git/` | delivery policy | shared Skill + repo/issue/GitHub truth | profile/stack/Worker rules | tracked docs/TOML | missing evidence stays explicit |
 | `docs/harness/` | delivery eval contract | packets/mechanisms/subjects | assertions and controls | tracked docs; receipts planned | disagreement blocks/fails |
-| `scripts/git-town/` | fixed delivery adapters | admitted tool/packet/worktree/leases | bounded Git operations, gate decisions, receipts | `receipts/git-town/` when run | `MERGED` mechanisms; every real invocation returns `BLOCKED_TOOL_ADMISSION` until #15 |
+| `scripts/git-town/` | fixed delivery adapters | admitted tool/packet/worktree/leases | bounded Git operations, gate decisions, receipts | `receipts/git-town/` when run | `MERGED` mechanisms; admitted for `darwin_arm64`, but no live run observed yet (#21) |
 
 Detailed transitions: [`docs/state-machines.md`](docs/state-machines.md).
 
@@ -432,13 +432,13 @@ main
             └── test/git-town-fail-closed-canaries #19  MERGED
                 └── tooling/git-town-publication-gate #20  MERGED
 
-infra/git-town-admission                           #15  BLOCKED (never created)
+infra/git-town-admitted                            #15  PASS (darwin_arm64)
 convergence/git-town-adoption-audit                #21  PLANNED
 ```
 
 | Issue | Molecular owner | Disagreement evidence that exists | State |
 | --- | --- | --- | --- |
-| [#15](https://github.com/ed3c/llm_arbitrage_system/issues/15) | exact host tool admission | — | `BLOCKED` on a named host acquisition method and legal/transitive review owner |
+| [#15](https://github.com/ed3c/llm_arbitrage_system/issues/15) | exact host tool admission | each of 12 lanes planted at `FAIL` and `NOT_EXERCISED`, asserted to block alone | `PASS` for `darwin_arm64`, receipt `eda73fcc` |
 | [#16](https://github.com/ed3c/llm_arbitrage_system/issues/16) | typed packet/path lease | removed field (generated per schema field), sibling overlap, wrong parent, arbitrary shell field | `MERGED` |
 | [#17](https://github.com/ed3c/llm_arbitrage_system/issues/17) | linked worktree/leases | primary checkout, dirty state, in-progress operation, duplicate/expired lease, credential-bearing remote, missing prompt policy | `MERGED` |
 | [#18](https://github.com/ed3c/llm_arbitrage_system/issues/18) | dry-run/no-push sync/receipts | scope mismatch, dropped `--no-push`, timeout, prompt, remote movement, out-of-lease diff, moved perennial ref | `MERGED` |
@@ -448,7 +448,7 @@ convergence/git-town-adoption-audit                #21  PLANNED
 
 `#16` named `infra/git-town-admission` as its parent. That branch was never created because `#15` is blocked on human decisions, so the tooling stack parented onto the documentation stack instead and asserts no `#15` lane.
 
-**A `MERGED` row is mechanism evidence, not live evidence.** No mechanism has run against a real Git Town executable: `HOST_GIT_TOWN_BIN` is unresolved, `live_execution_admitted` is `false`, and any real invocation returns `BLOCKED_TOOL_ADMISSION`. The canaries drive `fixtures/git-town/canary_tool.sh`, which reproduces the conditions the protocol enumerates rather than Git Town's semantics. `live_canary` stays `NOT_EXERCISED` for every row.
+**A `MERGED` row is mechanism evidence, not live evidence.** Git Town `v24.0.0` is admitted for `darwin_arm64` by receipt `eda73fcc` (#15). Admission makes a live run possible; it does not make one observed. `live_canary` stays `NOT_EXERCISED` until issue #21 runs it, and a host without its own receipt still returns `BLOCKED_TOOL_ADMISSION`. The canaries drive `fixtures/git-town/canary_tool.sh`, which reproduces the conditions the protocol enumerates rather than Git Town's semantics.
 
 See [`docs/git/STACKED_PRS.md`](docs/git/STACKED_PRS.md) for full packets, rollback subjects, dependencies, controls, and evidence lanes.
 

@@ -561,7 +561,7 @@ REMOTE_VERIFIED
 
 A successful local sync never skips local verification, publication admission, remote verification, CI, or Human Admit.
 
-Mechanism state as of `main@2bcbeae`: the adapters in `scripts/git-town/` exist and their controls pass in CI, but no transition above has ever been driven by a real Git Town executable. `HOST_GIT_TOWN_BIN` is unresolved, so `run_sync` returns `BLOCKED_TOOL_ADMISSION` before reaching `LOCAL_SYNCED`.
+Mechanism state: the adapters in `scripts/git-town/` exist and their controls pass in CI. Git Town `v24.0.0` is admitted for `darwin_arm64` by receipt `eda73fcc` (#15), so `run_sync` can now reach the tool on that host. No transition above has yet been driven by a real Git Town run — that observation is issue #21's, and until it happens every live lane stays `NOT_EXERCISED`.
 
 ## SM-15 — Campaign execution and durable recovery
 

@@ -7,7 +7,7 @@ This protocol governs repository-local branch hierarchy and synchronization work
 Current live-adapter state:
 
 ```text
-host admission:          NOT_EXERCISED (#15)
+host admission:          PASS for darwin_arm64 (#15), receipt eda73fcc
 task-packet validator:   IMPLEMENTED (#16)   scripts/git-town/task_packet.py
 worktree/lease doctor:   IMPLEMENTED (#17)   scripts/git-town/doctor.sh, lease.py
 bounded sync/receipts:   IMPLEMENTED (#18)   scripts/git-town/sync.sh, receipt.py
@@ -76,7 +76,7 @@ scripts/git-town/doctor.sh --head-branch B --allowed-path P [--allowed-path P]..
 scripts/git-town/sync.sh   --head-branch B --allowed-path P [--allowed-path P]... [--dry-run-only]
 ```
 
-Steps 2 to 7 below are performed by `scripts/git-town/sync.sh` (#18), which sequences the typed operations in `scripts/git-town/receipt.py`: `capture`, `sync`, `verify`, `append`. The Git Town executable is resolved from the logical selector `HOST_GIT_TOWN_BIN`; while issue #15 has admitted no host executable, every real invocation returns `BLOCKED_TOOL_ADMISSION`.
+Steps 2 to 7 below are performed by `scripts/git-town/sync.sh` (#18), which sequences the typed operations in `scripts/git-town/receipt.py`: `capture`, `sync`, `verify`, `append`. The Git Town executable is resolved from the logical selector `HOST_GIT_TOWN_BIN`. Issue #15 admitted `v24.0.0` for `darwin_arm64` (receipt `eda73fcc`); on any other host, or with the selector unset, a real invocation returns `BLOCKED_TOOL_ADMISSION`.
 
 The doctor resolves its lease store from the logical selector `HOST_LLM_ARBITRAGE_LEASES`; an unresolved selector is `BLOCKED_POLICY`, never a default path. The origin URL is passed on stdin so a credential-bearing remote is not published to the process table by the very check that rejects it.
 

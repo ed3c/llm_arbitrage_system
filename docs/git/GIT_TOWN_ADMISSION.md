@@ -7,9 +7,13 @@ required release: v24.0.0
 upstream repo:   git-town/git-town
 immutable tag:   0f3e55f5a6bae5b319dd713a0606263d0551af66
 release ID:      358702660
-live admission:  BLOCKED
-owner issue:     #15
+live admission:  ADMITTED for darwin_arm64
+receipt:         eda73fccce27c0885f82d25ef8f6b2fa82047b075e334b22e03c06bb33e7051d
+owner issue:     #15 (closed)
 ```
+
+Admission is host-bound. This records one machine. Any other platform or
+architecture must run `scripts/git-town/admit.sh` and produce its own receipt.
 
 This document records the repository policy pin. It is not a host admission receipt and does not authorize execution.
 
@@ -33,9 +37,9 @@ Upstream references:
 - [direct license](https://github.com/git-town/git-town/blob/v24.0.0/LICENSE)
 - [shared Worker Skill](https://github.com/ed3c/skills-shared/tree/main/skills/git-town-stacked-pr-worker)
 
-## Evidence that is still required
+## Evidence lanes
 
-Issue #15 must create a host-bound, subject-bound receipt with every lane below. The exact selected artifact depends on the trusted host platform and architecture, so the repository does not guess it.
+Issue #15 required a host-bound, subject-bound receipt with every lane below. Receipt `eda73fcc` supplies all twelve for `darwin_arm64`. The exact selected artifact depends on the trusted host platform and architecture, so the repository still does not guess it for any other machine.
 
 ## How to produce the receipt
 
@@ -60,34 +64,60 @@ The wizard installs nothing system-wide, commits no binary, and deletes nothing:
 
 Nothing about this entrypoint substitutes for the decisions. It makes them recordable in one sitting; a human still makes them.
 
-| Required lane | Current state | Positive assertion | Negative control |
-| --- | --- | --- | --- |
-| Host platform and architecture | `NOT_EXERCISED` | selected release artifact matches host | wrong architecture is rejected |
-| Artifact acquisition | `NOT_EXERCISED` | immutable release source and bounded acquisition record | mutable `latest` selector is rejected |
-| Artifact SHA-256 | `NOT_EXERCISED` | selected artifact matches upstream checksum manifest | one-byte/digest mutation is rejected |
-| Installed executable SHA-256 | `NOT_EXERCISED` | installed bytes match the admitted artifact/extraction contract | substituted executable is rejected |
-| Executable version output | `NOT_EXERCISED` | exact output resolves to `v24.0.0` | version mismatch is rejected |
-| Direct license identity | `PASS` for source text, host receipt absent | receipt binds reviewed license bytes | changed license digest is rejected |
-| SBOM or transitive dependency review | `NOT_EXERCISED` | named owner and artifact review state exist | missing mandatory state blocks admission |
-| Required notices review | `NOT_EXERCISED` | named owner records notices decision | missing notice state blocks admission |
-| Organization/legal approval | `NOT_EXERCISED` | owner-authored approval binds exact release/artifact | tool presence cannot substitute for approval |
-| Repository config compatibility | `OPEN` | `.git-town.toml` parses under admitted version | unknown key/value mutation fails |
+| Required lane | State | Recorded evidence |
+| --- | --- | --- |
+| Repository policy pins | `PASS` | profile agrees with every pin the wizard used |
+| Host platform and architecture | `PASS` | `Darwin/arm64` maps to `macos_arm` |
+| Artifact acquisition | `PASS` | immutable release `358702660`, asset `git-town_macos_arm_64.tar.gz`, named by `ed3c` |
+| Checksums manifest | `PASS` | manifest digest matches the pinned `7532377166cb...` |
+| Artifact SHA-256 | `PASS` | `0de42d52bad34316413c9d0ba0052d09d4ba8746930aa2cc6eaa5931562a91b2` |
+| Installed executable SHA-256 | `PASS` | `9f3807e07a6be79e4637b140deda9dff5d3a89321b8026a2f2e4a04d2f37fa2d` |
+| Executable version output | `PASS` | `Git Town 24.0.0` |
+| Direct license identity | `PASS` | MIT text reviewed; digest pinned in `docs/git/REPO_PROFILE.md` |
+| SBOM or transitive dependency review | `PASS` | accepted by `ed3c` |
+| Required notices review | `PASS` | accepted by `ed3c` |
+| Organization/legal approval | `PASS` | approved by `ed3cTheory` for release `358702660` |
+| Repository config compatibility | `PASS` | `.git-town.toml` parses under the admitted executable |
+
+Each lane's negative control lives in `tests/git-town/test_admission_receipt.py`: every one of the twelve is planted at `FAIL` and at `NOT_EXERCISED` in turn, and each is asserted to block admission on its own.
 
 ## Admission result
 
-The result is `PASS` only when all repository-required lanes are `PASS` for one exact host, executable, repository identity, task packet and subject. Any required `ABSENT`, `FAIL`, or `NOT_EXERCISED` lane blocks live execution.
+```text
+PASS
+```
 
-Stable blocked result:
+The result is `PASS` only when all repository-required lanes are `PASS` for one exact host, executable, repository identity, task packet and subject. Any required `ABSENT`, `FAIL`, or `NOT_EXERCISED` lane blocks live execution — `scripts/git-town/admission_receipt.py` enforces that rule, and its controls prove each lane can block alone.
+
+Tool presence on `PATH`, a package-manager receipt, a version string alone, or the direct MIT license alone remains insufficient. This receipt is none of those: it binds a measured artifact digest to the upstream manifest, a measured executable digest to that artifact, and three named human decisions to that exact release.
+
+Stable blocked result, for any host without its own receipt:
 
 ```text
 BLOCKED_TOOL_ADMISSION
 ```
 
-Tool presence on `PATH`, a package-manager receipt, a version string alone, or the direct MIT license alone is insufficient.
+## What admission does not authorize
+
+Admission makes a live Git Town run *possible*. It does not make one *observed*, and it grants no publication or merge authority:
+
+```text
+worker_publication_enabled   still false
+live canary                  NOT_EXERCISED, owned by issue #21
+merge                        Human Admit, unchanged
+```
 
 ## Allowed command surface after admission
 
-The repository admits bounded synchronization only through a fixed adapter owned by issue #18. Direct Agent execution remains denied until that adapter and its controls merge.
+The repository admits bounded synchronization only through the fixed adapter owned by issue #18, which is merged. Direct Agent execution of `git town` remains denied: the adapter builds the command shape itself, so no caller can pass an argument vector.
+
+Point the logical selector at the admitted executable before using it:
+
+```bash
+export HOST_GIT_TOWN_BIN=/path/to/the/admitted/git-town
+```
+
+The receipt records digests, not paths — `absolute_host_paths_in_tracked_files` is denied — so the selector is resolved per host and never committed.
 
 The intended command shapes are:
 

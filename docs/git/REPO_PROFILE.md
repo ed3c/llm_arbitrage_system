@@ -32,14 +32,17 @@ git_town:
   direct_license: MIT
   license_blob_sha: 4bcd5ec1942737f7976b8bac8534a8ab642ec0e0
   license_text_sha256: eec8a092b92231375231488d27b959e2fa2be80559c97db60c1b0458d3298791
-  selected_platform_artifact: NOT_EXERCISED_issue_15
-  selected_platform_artifact_sha256: NOT_EXERCISED_issue_15
-  executable_version_output: NOT_EXERCISED_issue_15
-  acquisition_provenance: PARTIAL_upstream_tag_release_and_manifest_only
-  sbom_or_transitive_review: NOT_EXERCISED_issue_15
-  required_notices_review: NOT_EXERCISED_issue_15
-  organization_legal_approval: NOT_EXERCISED_issue_15
-  live_execution_admitted: false
+  selected_platform_artifact: git-town_macos_arm_64.tar.gz
+  selected_platform_artifact_sha256: 0de42d52bad34316413c9d0ba0052d09d4ba8746930aa2cc6eaa5931562a91b2
+  installed_executable_sha256: 9f3807e07a6be79e4637b140deda9dff5d3a89321b8026a2f2e4a04d2f37fa2d
+  executable_version_output: Git Town 24.0.0
+  acquisition_provenance: immutable_release_358702660_asset_verified_against_pinned_manifest
+  sbom_or_transitive_review: ACCEPTED
+  required_notices_review: ACCEPTED
+  organization_legal_approval: APPROVED
+  admission_receipt_sha256: eda73fccce27c0885f82d25ef8f6b2fa82047b075e334b22e03c06bb33e7051d
+  admitted_host_platform: darwin_arm64
+  live_execution_admitted: true
 
 branch_policy:
   main_strategy: ff-only
@@ -180,9 +183,11 @@ human_owned:
 
 The profile has no unresolved required placeholder. Logical host selectors are names, not absolute paths; issue #17 must resolve them and prove repository/worktree identity without committing host-specific paths.
 
-`required_version` and upstream release metadata are tracked policy inputs. The host-selected artifact, executable digest, executable output, SBOM/transitive review, notices review, and legal approval remain separate `NOT_EXERCISED` lanes owned by issue #15. Therefore `live_execution_admitted` is `false`.
+`required_version` and upstream release metadata are tracked policy inputs. As of admission receipt `eda73fcc`, the host-selected artifact, its digest, the installed executable digest, the executable output, the SBOM/transitive review, the notices review and the legal approval are all `PASS` for one host — `darwin_arm64`. Every one of the twelve required lanes passed, which is the only condition under which `live_execution_admitted` becomes `true`.
 
-The publication section is deliberately disabled. Draft PRs in epic #11 are a trusted-operator bootstrap through GitHub, not proof that a Worker publication gate exists.
+That admission is host-bound. It says nothing about any other machine: a different platform or architecture must run `scripts/git-town/admit.sh` and produce its own receipt.
+
+The publication section remains deliberately disabled. Draft PRs in epic #11 were a trusted-operator bootstrap through GitHub, not proof that a Worker publication gate ran.
 
 ## Current adoption matrix
 
@@ -192,11 +197,13 @@ The publication section is deliberately disabled. Draft PRs in epic #11 are a tr
 | Shared Skill is referenced, not copied | `PASS` for tracked tree | `AGENTS.md`, `docs/git/README.md` |
 | Git Town version/tag/release/checksum manifest pin | `PASS` for static policy | this profile and `GIT_TOWN_ADMISSION.md` |
 | Direct license bytes reviewed | `PASS` for direct MIT text only | upstream `LICENSE@v24.0.0` |
-| Host executable/artifact digest/version | `NOT_EXERCISED` | #15 |
-| SBOM/transitive/notices/legal admission | `NOT_EXERCISED` | #15 |
-| Task-packet validator | `NOT_IMPLEMENTED` | #16 |
-| Linked worktree/lease doctor | `NOT_IMPLEMENTED` | #17 |
-| Bounded sync and receipts | `NOT_IMPLEMENTED` | #18 |
-| Fail-closed canaries | `NOT_IMPLEMENTED` | #19 |
-| Publication gate | `NOT_IMPLEMENTED` | #20 |
+| Host executable/artifact digest/version | `PASS` for `darwin_arm64` | receipt `eda73fcc` |
+| SBOM/transitive/notices/legal admission | `PASS` | receipt `eda73fcc` |
+| Task-packet validator | `MERGED` mechanism | #16, `scripts/git-town/task_packet.py` |
+| Linked worktree/lease doctor | `MERGED` mechanism | #17, `scripts/git-town/doctor.sh` |
+| Bounded sync and receipts | `MERGED` mechanism | #18, `scripts/git-town/sync.sh` |
+| Fail-closed canaries | `MERGED` mechanism | #19, `tests/git-town/test_fail_closed_canaries.py` |
+| Publication gate | `MERGED` mechanism | #20, `scripts/git-town/publish.sh` |
 | Live adoption canary and Human Admit | `NOT_EXERCISED` | #21 |
+
+A `MERGED` mechanism row means the adapter and its disagreement-producing controls exist and pass in CI. Admission makes a live run *possible*; it does not make one *observed*. The live canary stays `NOT_EXERCISED` until issue #21 runs it.

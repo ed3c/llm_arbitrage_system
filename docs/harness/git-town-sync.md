@@ -37,9 +37,9 @@ propose-rollback   compare the world against a receipt and propose, never act
 ```
 
 The Git Town executable is resolved from the logical selector
-`HOST_GIT_TOWN_BIN`. It is unresolved today, so the adapter returns
-`BLOCKED_TOOL_ADMISSION` on any real host — that is the correct state while
-issue #15 is unexercised, not a defect.
+`HOST_GIT_TOWN_BIN`. `v24.0.0` is admitted for `darwin_arm64` by receipt
+`eda73fcc` (#15), so on that host the adapter can run; anywhere else, and
+whenever the selector is unset, it returns `BLOCKED_TOOL_ADMISSION`.
 
 ## The caller picks a mode, never an argument vector
 
