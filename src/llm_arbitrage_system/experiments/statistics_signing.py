@@ -71,7 +71,7 @@ class StatisticsReportSnapshot:
             "source_sha256": self.source_sha256,
             "report_id": self.report_id,
             "matrix_sha256": self.matrix_sha256,
-            "candidate_count": len(cast(list[Any], self.payload["candidates"])),
+            "candidate_count": len(self.payload["candidates"]),
             "periods_per_year": self.payload["periods_per_year"],
         }
 
@@ -275,7 +275,7 @@ def _report_identity(report: StatisticsReportSnapshot) -> dict[str, Any]:
             "statistics report",
         ),
         "periods_per_year": report.payload["periods_per_year"],
-        "candidate_count": len(cast(list[Any], report.payload["candidates"])),
+        "candidate_count": len(report.payload["candidates"]),
     }
 
 
