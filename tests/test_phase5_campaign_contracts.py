@@ -176,7 +176,7 @@ def test_campaign_store_rejects_manifest_or_evaluation_drift(
     with CampaignStore(tmp_path / "campaign.sqlite3") as store:
         store.initialize(manifest, selected)
         with pytest.raises(RuntimeError, match="evaluation set conflicts"):
-            store.initialize(manifest, selected + ("evaluation-extra",))
+            store.initialize(manifest, (*selected, "evaluation-extra"))
         store.start(manifest.campaign_id)
         with pytest.raises(RuntimeError, match="cannot finish"):
             store.finish(manifest.campaign_id, "completed")
