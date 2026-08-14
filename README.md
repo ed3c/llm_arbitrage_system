@@ -8,14 +8,12 @@ It does **not** connect to exchanges, brokers, wallets, accounts, deposits, with
 
 ## Status vocabulary
 
-This repository never collapses implementation, evidence, or delivery states:
-
 ```text
 MERGED            bytes are reachable from the stated main subject
 OPEN_DRAFT        issue/PR exists and is intentionally Draft
-OPEN_READY        issue/PR exists and is admitted for review, not merge
+OPEN_READY        admitted for review; not merge authority
 PLANNED           decomposed work with no available implementation
-BLOCKED           policy or missing precondition prevents progress
+BLOCKED           policy or a missing precondition prevents progress
 
 PASS
 FAIL
@@ -25,11 +23,11 @@ NOT_EXERCISED
 SKIPPED_BY_POLICY
 ```
 
-Static documentation or config is not a live-tool `PASS`. Local sync is not publication, CI, review, merge, release, production, market truth, or profitability `PASS`.
+Documentation, static config, tool presence, local sync, publication, CI, review, merge, release, production, market truth, and profitability are separate evidence lanes.
 
 ## Agent entrypoint
 
-Agents must read in this order before editing:
+Read in this order before editing:
 
 1. [`AGENTS.md`](AGENTS.md);
 2. this `README.md`;
@@ -49,7 +47,7 @@ Agents must read in this order before editing:
    - [`docs/git/TASK_PACKET.md`](docs/git/TASK_PACKET.md);
    - [`docs/git/EVALS.md`](docs/git/EVALS.md);
    - [`docs/harness/README.md`](docs/harness/README.md);
-7. the canonical issue/task packet, nearest directory `README.md`, current branch/PR graph, exact heads, and workflow evidence.
+7. the canonical issue/task packet, nearest directory `README.md`, current branch/PR graph, exact heads, and current workflow evidence.
 
 Authority precedence:
 
@@ -71,7 +69,7 @@ main@55ecf0e9a91006f563a080661cb6adf650e2439a
 
 | Layer | Implementation | State |
 | --- | --- | --- |
-| Domain | immutable typed contracts, timezone-aware timestamps, exact `Decimal` money/rates | `MERGED` |
+| Domain | immutable typed contracts, timezone-aware timestamps, exact `Decimal` values | `MERGED` |
 | Analytics | Kaufman ER/KAMA, rolling Z-score, ATR percentage, Kalman filter | `MERGED` |
 | Strategy | paper-only funding, crowding, and RWA lead-lag routing | `MERGED` |
 | Approval | freshness, edge, notional, exposure, duplicate, balance, slippage gates | `MERGED` |
@@ -80,9 +78,9 @@ main@55ecf0e9a91006f563a080661cb6adf650e2439a
 | Reporting | execution quality and evidence-bounded optional risk metrics | `MERGED` |
 | Phase 3 experiments | strict inputs, semantic IDs, atomic bundles, verification, sweeps, walk-forward plans | `MERGED` |
 | Phase 4 trust/OOS | Ed25519 attestations, lineage DAG, test-only evaluation, trusted registry, coverage aggregation | `MERGED` |
-| Agent/integration SSOT | issues #11–#12, PR #22 | `OPEN_DRAFT` |
-| Git Town governance/profile | issue #13, PR #23 | `OPEN_DRAFT` |
-| README convergence/index | issue #14, convergence PR | `OPEN_DRAFT` after publication |
+| Agent/integration SSOT | issue #12 / [PR #22](https://github.com/ed3c/llm_arbitrage_system/pull/22) | `OPEN_DRAFT` |
+| Git Town governance/profile | issue #13 / [PR #23](https://github.com/ed3c/llm_arbitrage_system/pull/23) | `OPEN_DRAFT` |
+| README convergence/index | issue #14 / [PR #24](https://github.com/ed3c/llm_arbitrage_system/pull/24) | `OPEN_DRAFT` |
 | Git Town host admission and adapters | issues #15–#21 | `PLANNED` / `NOT_IMPLEMENTED` / `NOT_EXERCISED` |
 | Live exchange/broker execution | prohibited | `BLOCKED` |
 
@@ -104,32 +102,25 @@ configuration
 
 Repository mapping:
 
-| Source directory/concept | Actual repository owner | Boundary |
+| Source concept | Actual repository owner | Boundary |
 | --- | --- | --- |
-| `config/` | `src/llm_arbitrage_system/config/`, `experiments/config.py`, examples | behavior config only; no secrets |
-| `core` contracts | `domain/` | immutable values, no I/O |
-| data ingestion | `experiments/dataset.py` | strict offline JSONL, not live WebSocket |
+| configuration | `src/llm_arbitrage_system/config/`, `experiments/config.py`, examples | behavior config; no secrets |
+| core contracts | `domain/` | immutable values; no I/O |
+| ingestion | `experiments/dataset.py` | strict offline JSONL; not WebSocket |
 | analytics | `analytics/` | merged Kaufman/noise features |
-| strategies | `simulation/strategy_router.py` | paper-only route generation |
-| risk/portfolio | `simulation/approval.py` | simulated capacity/reservations/reconciliation |
+| strategies | `simulation/strategy_router.py` | paper plan generation |
+| risk/portfolio | `simulation/approval.py` | simulated capacity/reservation/reconciliation |
 | execution | `simulation/executor.py` | deterministic paper fills only |
-| event loop | `simulation/pipeline.py` | bounded queue pipeline |
+| event loop | `simulation/pipeline.py` | bounded queue orchestration |
 | storage | `storage/sqlite_journal.py` | durable local replay evidence |
-| backtest/reporting | `experiments/`, `reporting/` | reproducible replay/evidence, not a live venue |
-| external adapters | no implementation | `NOT_IMPLEMENTED` |
+| backtest/reporting | `experiments/`, `reporting/` | reproducible replay/evidence |
+| exchange/broker/wallet adapters | no implementation | `NOT_IMPLEMENTED` |
 
 The PDF is a design basis. The code tree and merged PR history determine implementation truth.
 
 ## Repository directory structure
 
-Markers:
-
-```text
-[M] merged on main baseline
-[D] open Draft documentation stack
-[P] planned future leaf; path may not exist yet
-[X] prohibited
-```
+Markers: `[M]` merged, `[D]` Draft documentation stack, `[P]` planned path not yet implemented.
 
 ```text
 llm_arbitrage_system/
@@ -137,10 +128,9 @@ llm_arbitrage_system/
 ├── README.md                                      [D] convergence and traceability index
 ├── .git-town.toml                                 [D] conservative static Git Town policy
 ├── Makefile                                       [M] quality and smoke entrypoints
-├── pyproject.toml                                 [M] package, CLI and dev dependencies
+├── pyproject.toml                                 [M] package, CLI and dependencies
 ├── SECURITY.md                                    [M] paper-only and secret boundary
-├── config/
-│   └── README.md                                  [M] configuration guidance
+├── config/README.md                               [M] configuration guidance
 ├── docs/
 │   ├── integration-status.md                      [D] merged/open/planned SSOT
 │   ├── state-machines.md                          [D] transition ownership
@@ -150,66 +140,63 @@ llm_arbitrage_system/
 │   ├── phase3-experiments.md                      [M] reproducible experiment contract
 │   ├── phase4-trust-registry.md                   [M] provenance/lineage/OOS registry
 │   ├── git/                                       [D] repository Git Town projection
-│   │   ├── README.md                              ownership/read order/adoption state
-│   │   ├── REPO_PROFILE.md                        exact repository/tool/worker profile
-│   │   ├── GIT_TOWN_ADMISSION.md                  exact-tool admission gaps
-│   │   ├── STACKED_PRS.md                         branch/issue/PR/merge index
-│   │   ├── WORKER_PROTOCOL.md                     fail-closed Worker algorithm
-│   │   ├── TASK_PACKET.md                         eval-first packet schema
-│   │   └── EVALS.md                               assertions and controls
-│   └── harness/
-│       └── README.md                              [D] evidence ladder/fixed entrypoints
-├── examples/
-│   ├── phase3/                                    [M] dataset/config/sweep fixtures
-│   └── phase4/                                    [M] lineage fixture
-├── scripts/
-│   └── phase4_smoke.sh                            [M] complete offline trust/OOS smoke
+│   │   ├── README.md
+│   │   ├── REPO_PROFILE.md
+│   │   ├── GIT_TOWN_ADMISSION.md
+│   │   ├── STACKED_PRS.md
+│   │   ├── WORKER_PROTOCOL.md
+│   │   ├── TASK_PACKET.md
+│   │   └── EVALS.md
+│   └── harness/README.md                          [D] evidence ladder and controls
+├── examples/phase3/                               [M] dataset/config/sweep fixtures
+├── examples/phase4/                               [M] lineage fixture
+├── scripts/phase4_smoke.sh                        [M] offline trust/OOS smoke
 ├── src/llm_arbitrage_system/
-│   ├── domain/                                    [M] immutable cross-layer contracts
+│   ├── domain/                                    [M] immutable contracts
 │   ├── analytics/                                 [M] adaptive feature state
-│   ├── config/                                    [M] analytics runtime defaults
+│   ├── config/                                    [M] runtime defaults
 │   ├── simulation/                                [M] planner/approval/executor/pipeline
-│   ├── storage/                                   [M] append-only replay journal
+│   ├── storage/                                   [M] replay journal
 │   ├── reporting/                                 [M] evidence-bounded metrics
-│   └── experiments/                               [M] Phase 3/4 control and trust plane
-├── tests/                                         [M] runtime, evidence, experiment, trust tests
-├── scripts/git-town/                              [P] issues #16–#20; NOT_IMPLEMENTED
-├── tests/git-town/                                [P] issues #16–#20; NOT_IMPLEMENTED
-├── fixtures/git-town/                             [P] issue #19; NOT_IMPLEMENTED
-└── receipts/git-town/                             [P] issues #15/#18/#20/#21; NOT_IMPLEMENTED
+│   └── experiments/                               [M] experiment and trust control plane
+├── tests/                                         [M] runtime/evidence/experiment/trust tests
+├── scripts/git-town/                              [P] issues #16–#20; `NOT_IMPLEMENTED`
+├── tests/git-town/                                [P] issues #16–#20; `NOT_IMPLEMENTED`
+├── fixtures/git-town/                             [P] issue #19; `NOT_IMPLEMENTED`
+└── receipts/git-town/                             [P] issues #15/#18/#20/#21; `NOT_IMPLEMENTED`
 ```
 
-Planned paths are shown for ownership routing only. Their absence is intentional until the owning issue implements them.
+Planned paths are ownership routes, not claims that empty or hidden implementations exist.
 
 ## Directory → State Machine → data contract
 
-| Path | State Machine owner | Input | Output | Persistence | Fail/blocked transition |
+| Path | State Machine | Input | Output | Persistence | Failure/blocked state |
 | --- | --- | --- | --- | --- | --- |
-| `domain/` | domain validation | constructor fields | immutable `MarketEvent`, plan, approval, fill/result contracts | none | invalid value raises before admission |
-| `analytics/` | feature warm-up/advance | ordered `MarketEvent` | `FeatureSnapshot | None` | in-memory per `venue:symbol` | indicator error aborts replay |
-| `simulation/strategy_router.py` | route planning | event + features | paper `TradePlan | None` | decision via journal | no threshold → no plan |
-| `experiments/determinism.py` | plan/leg identity | semantic dataset/event/features/sequence/plan | deterministic IDs | bundle/journal | noncanonical value fails |
-| `simulation/approval.py` | risk/reservation/reconciliation | `StrategyDecision`, terminal result | rejection or `ApprovedTradePlan`; open/residual exposure | in-memory, risk evidence in journal | reasons reject; residual halts |
-| `simulation/executor.py` | deterministic execution/compensation | approved paper plan | `FILLED`, `FAILED`, `COMPENSATED` result | journal | partial legs reverse confirmed fills |
-| `simulation/pipeline.py` | bounded orchestration lifecycle | event iterable | replay/performance reports | through journal | cancel siblings → aborted → re-raise |
-| `storage/sqlite_journal.py` | replay evidence lifecycle | events/decisions/risk/results/reports | durable rows, status, integrity result | SQLite WAL/FK/FULL sync | running → aborted or completed only |
-| `reporting/performance.py` | evidence-bounded metrics | approved plans + results + optional PnL evidence | execution metrics, optional drawdown/Sharpe | journal/bundle JSON | unsupported fields remain null |
-| `experiments/dataset.py` | dataset compilation | raw JSONL | typed events, source/semantic/event hashes, canonical JSONL | bundle inputs | schema/time/float/key errors fail closed |
-| `experiments/config.py` | configuration compilation | raw YAML | typed config, source/canonical hashes | bundle inputs | unknown/duplicate/invalid fields fail closed |
-| `experiments/manifest.py` | experiment identity | dataset/config hashes + revision/version | experiment/run IDs | `manifest.json` | missing revision fails |
-| `experiments/runner.py` | experiment composition | validated dataset/config | completed pipeline and staging evidence | staging SQLite/files | any error deletes staging |
-| `experiments/bundle*.py` | bundle publication/verification | staging inputs/evidence/reports | atomically published verified bundle | content-addressed directory | mismatch/extra/missing/integrity failure blocks publish |
-| `experiments/sweep.py`, `walk_forward.py` | matrix planning | base dataset/config + strict sweep | candidate/window/evaluation identities | `matrix.json` | oversized grid/window contract fails |
-| `experiments/signing.py` | detached provenance | verified bundle + local Ed25519 key + optional lineage | signed attestation | external JSON | tamper/key/trust/lineage mismatch fails |
-| `experiments/lineage.py` | lineage DAG | source/derived/slice manifest | content-addressed lineage node | registry | source parent or missing child parent fails |
-| `experiments/evaluation.py` | planned OOS execution | matrix item + source dataset/config | test-slice-only evaluation bundle | bundle | candidate/window/hash mismatch fails |
-| `experiments/registry.py` | local trust/import state | keys, lineage, signed bundles/evaluations | immutable trusted/untrusted rows | SQLite registry | missing trust/parent or identity conflict fails |
-| `experiments/aggregation.py` | coverage summary | matrix + registered evaluations | none/partial/complete coverage and supported averages | JSON output | no automatic selection/PnL/Sharpe/alpha |
-| `docs/git/` | repository delivery policy | shared Skill + repo/issue/GitHub truth | profile, stack graph, Worker/publication rules | tracked docs/TOML | missing evidence remains explicit |
-| `docs/harness/` | delivery eval contract | task packet/mechanism/subjects | assertions, controls, evidence requirements | tracked docs; receipts planned | disagreement must block/fail |
-| `scripts/git-town/` | future fixed adapters | admitted packet/tool/worktree/leases | bounded Git operations and receipts | planned receipt store | `NOT_IMPLEMENTED` until #16–#20 |
+| `domain/` | domain validation | constructor fields | immutable events/plans/approvals/results | none | invalid value rejected before admission |
+| `analytics/` | warm-up/advance | ordered `MarketEvent` | `FeatureSnapshot | None` | in memory per `venue:symbol` | analytics error aborts replay |
+| `simulation/strategy_router.py` | route planning | event + features | paper `TradePlan | None` | decision via journal | threshold miss produces no plan |
+| `experiments/determinism.py` | plan/leg identity | semantic evidence + sequence + plan | deterministic IDs | journal/bundle | noncanonical input fails |
+| `simulation/approval.py` | risk/reservation/reconciliation | decision + terminal result | rejection or approved plan; exposure state | risk evidence in journal | reasons reject; residual halts |
+| `simulation/executor.py` | execution/compensation | approved paper plan | filled/failed/compensated result | journal | partial outcome reverses confirmed fills |
+| `simulation/pipeline.py` | bounded lifecycle | event iterable | replay/performance reports | through journal | cancel siblings → aborted → re-raise |
+| `storage/sqlite_journal.py` | evidence lifecycle | causal runtime objects/reports | durable rows/status/integrity | SQLite WAL/FK/FULL sync | running → completed or aborted |
+| `reporting/performance.py` | metric evidence | approvals/results + optional PnL | execution metrics; optional drawdown/Sharpe | journal/bundle JSON | unsupported claims remain null |
+| `experiments/dataset.py` | dataset compilation | raw JSONL | typed events + source/semantic hashes | bundle inputs | schema/time/float/key failure |
+| `experiments/config.py` | config compilation | raw YAML | typed config + source/canonical hashes | bundle inputs | unknown/duplicate/invalid field failure |
+| `experiments/manifest.py` | experiment identity | input hashes + revision/version | experiment/run IDs | manifest | missing revision fails |
+| `experiments/runner.py` | experiment composition | dataset/config | completed replay + staging evidence | staging SQLite/files | error removes staging |
+| `experiments/bundle*.py` | publish/verify | staging evidence | atomic verified bundle | content-addressed directory | mismatch/integrity blocks publication |
+| `sweep.py`, `walk_forward.py` | matrix planning | dataset/config/sweep | candidate/window/evaluation IDs | matrix JSON | oversized/invalid plan fails |
+| `signing.py` | detached provenance | verified bundle + local Ed25519 key | attestation | external JSON | tamper/key/trust mismatch fails |
+| `lineage.py` | lineage DAG | source/derived/slice manifest | lineage node | registry | invalid/missing parent fails |
+| `evaluation.py` | OOS execution | matrix item + source inputs | test-slice-only bundle | bundle | candidate/window/hash mismatch fails |
+| `registry.py` | trusted import | keys/lineage/signed bundles/evaluations | immutable rows | SQLite registry | trust/parent/identity conflict fails |
+| `aggregation.py` | coverage summary | matrix + registrations | none/partial/complete coverage | JSON output | selection/PnL/Sharpe/alpha stay null |
+| `docs/git/` | delivery policy | shared Skill + repo/issue/GitHub truth | profile/stack/Worker rules | tracked docs/TOML | missing evidence stays explicit |
+| `docs/harness/` | delivery eval contract | packets/mechanisms/subjects | assertions and controls | tracked docs; receipts planned | disagreement blocks/fails |
+| `scripts/git-town/` | future fixed adapters | admitted tool/packet/worktree/leases | bounded Git operations/receipts | planned receipt store | `NOT_IMPLEMENTED` until #16–#20 |
 
-Full transition details: [`docs/state-machines.md`](docs/state-machines.md).
+Detailed transitions: [`docs/state-machines.md`](docs/state-machines.md).
 
 ## Runtime State Machine and queue data flow
 
@@ -217,47 +204,41 @@ Full transition details: [`docs/state-machines.md`](docs/state-machines.md).
 Iterable[MarketEvent]
   │ persist event
   ▼
-┌─────────────────────┐
-│ bounded data_queue  │
-└──────────┬──────────┘
-           ▼
+bounded data_queue
+  ▼
 AnalyticsEngine
   ER + KAMA + Z-score + ATR + Kalman
-           │ warm-up may emit no output
-           ▼
+  │ warm-up may emit no output
+  ▼
 FeatureSnapshot
-           ▼
+  ▼
 PaperStrategyRouter
   ├── funding carry
   ├── crowding reversion
   └── RWA lead-lag
-           │ persist decision
-           ▼
-┌─────────────────────────┐
-│ bounded decision_queue  │
-└──────────┬──────────────┘
-           ▼
+  │ persist decision
+  ▼
+bounded decision_queue
+  ▼
 StatefulPaperApprover
   freshness + edge + notional + exposure
   + duplicate + balance + slippage
-           │ persist accepted/rejected evaluation
-           ├── rejected → counter, terminal for decision
-           ▼
+  │ persist accepted/rejected evaluation
+  ├── rejected → terminal for decision
+  ▼
 ApprovedTradePlan + reservation
-           ▼
-┌─────────────────────────┐
-│ bounded approved_queue  │
-└──────────┬──────────────┘
-           ▼
+  ▼
+bounded approved_queue
+  ▼
 DeterministicPaperExecutor
   concurrent legs + failure injection + reversal
-           │ persist result
-           ▼
+  │ persist result
+  ▼
 Approver reconciliation
-  ├── FILLED       → simulated open exposure
-  ├── COMPENSATED  → reservation released
-  └── residual     → halt new approval
-           ▼
+  ├── FILLED      → simulated open exposure
+  ├── COMPENSATED → reservation released
+  └── residual    → halt new approvals
+  ▼
 ReplayReport + ResearchPerformanceReport
 ```
 
@@ -268,41 +249,40 @@ any stage raises
   → cancel siblings
   → journal running → aborted
   → preserve causal evidence
-  → remove experiment staging if owned by runner
+  → remove owned experiment staging
   → re-raise
 ```
 
-The pipeline is single-use; sentinels drain each bounded stage in order.
+Sentinels drain each bounded stage in order; a pipeline instance is single-use.
 
 ## Experiment and evidence data flow
 
 ```text
-market_events.jsonl                  experiment.yaml
-       │ strict parse/canonicalize          │ strict parse/canonicalize
-       ▼                                    ▼
-DatasetSnapshot                       ExperimentConfigSnapshot
-source + semantic hashes              source + canonical hashes
-       └───────────────┬────────────────────┘
-                       ▼
-              code revision + package version
-                       ▼
-                ExperimentManifest
-             experiment_id + run_id
-                       ▼
-             hidden staging directory
-                       ▼
-     ContentAddressedPlanner + PaperReplayPipeline
-                       ▼
- evidence.sqlite3 + replay/performance reports
-                       ▼
- manifest + source/canonical inputs + report.md
-                       ▼
- checksums.sha256 + independent verification
-                       ▼
- atomic `exp-<semantic-identity>/` publication
+market_events.jsonl                experiment.yaml
+  → strict parse/canonicalize        → strict parse/canonicalize
+  → DatasetSnapshot                  → ExperimentConfigSnapshot
+       source/semantic hashes             source/canonical hashes
+              └──────────────┬──────────────┘
+                             ▼
+                 code revision + package version
+                             ▼
+                     ExperimentManifest
+                     experiment_id/run_id
+                             ▼
+                   hidden staging directory
+                             ▼
+       ContentAddressedPlanner + PaperReplayPipeline
+                             ▼
+        evidence.sqlite3 + replay/performance reports
+                             ▼
+     manifest + raw/canonical inputs + report.md + checksums
+                             ▼
+            independent verification + atomic rename
+                             ▼
+                 exp-<semantic-identity>/
 ```
 
-Bundle verification checks exact file set, checksums, manifest identity, source↔canonical linkage, event metadata, SQLite integrity, one matching run ID, and `completed` status.
+Verification checks exact file set, checksums, manifest identity, source↔canonical linkage, event metadata, SQLite integrity, one matching run ID, and `completed` status.
 
 ## Signed provenance, lineage, and OOS registry flow
 
@@ -310,37 +290,31 @@ Bundle verification checks exact file set, checksums, manifest identity, source�
 verified bundle
   + local Ed25519 private key outside repository
   + optional lineage manifest
-        ▼
-detached attestation
-  signer key ID + embedded public key
-  + experiment/run IDs
-  + manifest/checksum/root digests
-  + optional lineage ID
-        ▼
-attestation verification
-        ▼
-trusted key allowlist + parent-complete lineage DAG
-        ▼
-immutable experiment import
+  → detached attestation
+      signer/public key + experiment/run IDs
+      + manifest/checksum/root digests + optional lineage ID
+  → signature/trust/lineage verification
+  → trusted-key allowlist + parent-complete lineage DAG
+  → immutable experiment import
 
 Phase 3 matrix + evaluation_id
   → recompute matrix/candidate/window/train/test identities
   → replay test slice only
   → evaluation.json + checksummed bundle
   → detached signature
-  → trusted matrix-bound evaluation registration
-  → per-candidate none / partial / complete coverage
+  → trusted matrix-bound registration
+  → candidate none / partial / complete coverage
 ```
 
-A signature proves key possession for captured bytes. Lineage records asserted transformation ancestry. Registry trust records a local allowlist decision. None proves original market truth, legal identity, realized profit, future performance, or risk-free returns.
+Signatures prove key possession for captured bytes. Lineage records asserted transformations. Registry trust records a local allowlist decision. None proves market truth, legal identity, realized profit, future performance, or risk-free returns.
 
-## Git Town Worker State Machine and evidence lanes
+## Git Town Worker State Machine
 
 Canonical shared method:
 
 [`ed3c/skills-shared/skills/git-town-stacked-pr-worker`](https://github.com/ed3c/skills-shared/tree/main/skills/git-town-stacked-pr-worker)
 
-Repository policy pin:
+Repository pin:
 
 ```text
 Git Town:       v24.0.0
@@ -349,19 +323,17 @@ Live admission: false
 Owner issue:    #15
 ```
 
-The repository does not copy the shared Skill. It owns `.git-town.toml`, [`docs/git/REPO_PROFILE.md`](docs/git/REPO_PROFILE.md), task packets, leases, adapters, CI, receipts, branch/PR graph, cleanup and rollback.
-
-Specified Worker flow:
+The repository does not copy the shared Skill. It owns `.git-town.toml`, the repository profile, task packets, leases, adapters, CI, receipts, branch/PR graph, cleanup, and rollback.
 
 ```text
 TASK_PROPOSED
   → complete eval-first task packet
-  → exact Git Town host admission
+  → exact host tool admission
   → linked worktree + exclusive branch/path leases
   → clean/ancestry/remote/non-interactive preflight
-  → bounded dry-run
+  → dry-run:
       git town sync --stack --dry-run --non-interactive --no-auto-resolve --no-push
-  → bounded no-push sync
+  → bounded no-push sync:
       git town sync --stack --non-interactive --no-auto-resolve --no-push
   ├── NO_CHANGE / SYNCED
   ├── BLOCKED_DIRTY / PROMPT / CONFLICT / TIMEOUT / POLICY
@@ -369,9 +341,8 @@ TASK_PROPOSED
   → independent graph/path/protected-ref verification
   → exact-head repository evals + negative controls
   → append-only local receipt
-  → trusted GitHub snapshot + one publication intent
-  → publication gate ALLOW/BLOCK
-  → remote fetch + exact head/ancestry verification
+  → one-intent publication gate
+  → post-push remote head/ancestry verification
   → GitHub trusted check
   → Human Admit
   → merge
@@ -383,18 +354,18 @@ Current mechanism states:
 | --- | --- | --- |
 | Static profile/config/governance | `OPEN_DRAFT` | #13 / PR #23 |
 | Host executable/provenance/SBOM/notices/legal receipt | `NOT_EXERCISED` | #15 |
-| Typed task packet/path lease | `NOT_IMPLEMENTED` | #16 |
-| Linked-worktree/lease doctor | `NOT_IMPLEMENTED` | #17 |
+| Task-packet/path-lease validator | `NOT_IMPLEMENTED` | #16 |
+| Worktree/lease doctor | `NOT_IMPLEMENTED` | #17 |
 | Bounded no-push sync/receipt writer | `NOT_IMPLEMENTED` | #18 |
 | Conflict/prompt/timeout/rollback canaries | `NOT_IMPLEMENTED` | #19 |
 | Publication gate/remote verifier | `NOT_IMPLEMENTED` | #20 |
-| Live convergence/adoption audit | `NOT_EXERCISED` | #21 |
+| Live adoption audit | `NOT_EXERCISED` | #21 |
 
-The active documentation PR ancestry proves the Git object and PR dependency graph after GitHub publication. It does not prove a local admitted Git Town run.
+The documentation branch/PR ancestry is real GitHub state. It is not a local admitted Git Town sync receipt.
 
 ## Historical merged PR index
 
-| Phase | PR | Merge subject | Result |
+| Phase | PR | Merge subject | State |
 | --- | --- | --- | --- |
 | Phase 1 contracts/analytics | [#1](https://github.com/ed3c/llm_arbitrage_system/pull/1) | `0e8ceec3456ad2c74fa77237d3b814520f0213fc` | `MERGED` |
 | Phase 2 paper runtime | [#3](https://github.com/ed3c/llm_arbitrage_system/pull/3) | `1a255ad865ce346816bc04ef8680d80477c32cc7` | `MERGED` |
@@ -410,43 +381,41 @@ Epic: [#11](https://github.com/ed3c/llm_arbitrage_system/issues/11).
 main@55ecf0e9a91006f563a080661cb6adf650e2439a
 └── PR #22 / issue #12 / docs/phase4-integration-ssot
     └── PR #23 / issue #13 / docs/git-town-governance
-        └── convergence PR / issue #14 / docs/readme-state-flow-index
+        └── PR #24 / issue #14 / docs/readme-state-flow-index
 ```
 
-| Slice | PR | Base → head | Path lease | Exact-head eval owner | State |
-| --- | --- | --- | --- | --- | --- |
-| Agent/integration SSOT | [#22](https://github.com/ed3c/llm_arbitrage_system/pull/22) | `main → docs/phase4-integration-ssot` | `AGENTS.md`, integration/state/data-flow docs | PR #22 CI + #12 audits | `OPEN_DRAFT` |
-| Git Town governance | [#23](https://github.com/ed3c/llm_arbitrage_system/pull/23) | `docs/phase4-integration-ssot → docs/git-town-governance` | `.git-town.toml`, `docs/git/**`, `docs/harness/**`, templates | PR #23 CI + #13 audits | `OPEN_DRAFT` |
-| README convergence | assigned after publication | `docs/git-town-governance → docs/readme-state-flow-index` | `README.md`, `docs/git/STACKED_PRS.md` | convergence CI + #14 audits | `OPEN_DRAFT` after PR creation |
+| Order | PR | Base → head | Path lease | State |
+| --- | --- | --- | --- | --- |
+| 1 | [#22](https://github.com/ed3c/llm_arbitrage_system/pull/22) | `main → docs/phase4-integration-ssot` | `AGENTS.md`, integration/state/data-flow docs | `OPEN_DRAFT` |
+| 2 | [#23](https://github.com/ed3c/llm_arbitrage_system/pull/23) | `docs/phase4-integration-ssot → docs/git-town-governance` | `.git-town.toml`, `docs/git/**`, `docs/harness/**`, templates | `OPEN_DRAFT` |
+| 3 | [#24](https://github.com/ed3c/llm_arbitrage_system/pull/24) | `docs/git-town-governance → docs/readme-state-flow-index` | `README.md`, `docs/git/STACKED_PRS.md` | `OPEN_DRAFT` |
 
-Merge order is parent first, followed by retarget and exact-head recheck of each child. Every ready/retarget/merge action is Human Admit. No Agent invokes `git town ship`.
+Parent-first merge order requires explicit Human Admit. After each parent merge, retarget the child and rerun exact-head/base checks. No Agent marks ready, retargets, merges, enters a queue, or invokes `git town ship` automatically.
 
 ## Planned molecular leaf Stack PRs
 
-These leaves are tracked issues, not available code. Their serial order is a safety dependency chain.
-
 ```text
 main after documentation convergence
-└── infra/git-town-admission                         #15
-    └── tooling/git-town-task-packet-validator       #16
-        └── tooling/git-town-worktree-doctor         #17
-            └── tooling/git-town-bounded-sync        #18
+└── infra/git-town-admission                           #15
+    └── tooling/git-town-task-packet-validator         #16
+        └── tooling/git-town-worktree-doctor           #17
+            └── tooling/git-town-bounded-sync          #18
                 └── test/git-town-fail-closed-canaries #19
                     └── tooling/git-town-publication-gate #20
                         └── convergence/git-town-adoption-audit #21
 ```
 
-| Issue | Branch / parent | Molecular owner | Narrow path lease | Required disagreement evidence | State |
+| Issue | Branch/parent | Molecular owner | Path lease summary | Required disagreement evidence | State |
 | --- | --- | --- | --- | --- | --- |
-| [#15](https://github.com/ed3c/llm_arbitrage_system/issues/15) | `infra/git-town-admission ← main` | exact host tool admission | admission doc + admission receipts | wrong version/digest/architecture; missing legal/transitive state | `PLANNED`, blocked on host/legal owner |
-| [#16](https://github.com/ed3c/llm_arbitrage_system/issues/16) | `tooling/git-town-task-packet-validator ← #15` | typed packet/path lease | validator/tests/task Harness docs | remove every field; overlap; wrong ancestry; arbitrary shell | `PLANNED` |
-| [#17](https://github.com/ed3c/llm_arbitrage_system/issues/17) | `tooling/git-town-worktree-doctor ← #16` | linked worktree/leases | doctor/lease/tests/docs | primary checkout; dirty tree; duplicate/expired/overlap lease; bad remote | `PLANNED` |
-| [#18](https://github.com/ed3c/llm_arbitrage_system/issues/18) | `tooling/git-town-bounded-sync ← #17` | dry-run/no-push sync + receipts | fixed sync/receipt adapters/tests/docs | scope mismatch; timeout; prompt; remote movement; out-of-lease diff | `PLANNED` |
-| [#19](https://github.com/ed3c/llm_arbitrage_system/issues/19) | `test/git-town-fail-closed-canaries ← #18` | conflict/cleanup/rollback canaries | tests/fixtures/canary docs | planted conflict, prompt, timeout, residue, ref movement, rollback drift | `PLANNED` |
-| [#20](https://github.com/ed3c/llm_arbitrage_system/issues/20) | `tooling/git-town-publication-gate ← #19` | one-intent publication and remote verifier | fixed publication/snapshot/remote adapters + CI | stale receipt, old SHA, feedback, billing, wrong remote/head/parent | `PLANNED` |
-| [#21](https://github.com/ed3c/llm_arbitrage_system/issues/21) | `convergence/git-town-adoption-audit ← #20` | live convergence audit | convergence docs/receipts | missing evidence lane; `NOT_EXERCISED` promoted to `PASS` | `PLANNED` |
+| [#15](https://github.com/ed3c/llm_arbitrage_system/issues/15) | `infra/git-town-admission ← main` | exact host tool admission | admission doc/receipts | wrong version/digest/architecture; missing legal/transitive state | `PLANNED`, blocked on host/legal owners |
+| [#16](https://github.com/ed3c/llm_arbitrage_system/issues/16) | `tooling/git-town-task-packet-validator ← #15` | typed packet/path lease | validator/tests/Harness | removed field, overlap, wrong parent, arbitrary shell | `PLANNED` |
+| [#17](https://github.com/ed3c/llm_arbitrage_system/issues/17) | `tooling/git-town-worktree-doctor ← #16` | linked worktree/leases | doctor/lease/tests/docs | primary checkout, dirty state, duplicate/expired lease, bad remote | `PLANNED` |
+| [#18](https://github.com/ed3c/llm_arbitrage_system/issues/18) | `tooling/git-town-bounded-sync ← #17` | dry-run/no-push sync/receipts | fixed adapters/tests/docs | scope mismatch, timeout, prompt, remote movement, path drift | `PLANNED` |
+| [#19](https://github.com/ed3c/llm_arbitrage_system/issues/19) | `test/git-town-fail-closed-canaries ← #18` | conflict/cleanup/rollback canaries | tests/fixtures/docs | conflict, prompt, timeout, residue, ref movement, rollback drift | `PLANNED` |
+| [#20](https://github.com/ed3c/llm_arbitrage_system/issues/20) | `tooling/git-town-publication-gate ← #19` | publication/remote verifier | adapters/tests/CI/docs | stale receipt, old SHA, feedback, billing, wrong remote/head/parent | `PLANNED` |
+| [#21](https://github.com/ed3c/llm_arbitrage_system/issues/21) | `convergence/git-town-adoption-audit ← #20` | live adoption audit | convergence docs/receipts | missing evidence lane; false promotion of `NOT_EXERCISED` | `PLANNED` |
 
-See [`docs/git/STACKED_PRS.md`](docs/git/STACKED_PRS.md) for task-packet detail, rollback subjects, path leases, dependencies, and evidence lanes.
+See [`docs/git/STACKED_PRS.md`](docs/git/STACKED_PRS.md) for full packets, rollback subjects, dependencies, controls, and evidence lanes.
 
 ## Install, test, and smoke
 
@@ -460,9 +429,7 @@ make phase3-smoke
 make phase4-smoke
 ```
 
-Repository CI runs Ruff, strict Mypy, pytest with coverage, Python 3.10–3.13 compatibility, Phase 3 smoke, and Phase 4 trust/registry smoke.
-
-These commands test the offline repository. They do not prove Git Town admission or a live trading path.
+CI runs Ruff, strict Mypy, pytest with coverage, Python 3.10–3.13 compatibility, Phase 3 smoke, and Phase 4 trust/registry smoke. These commands test the offline repository; they do not prove Git Town admission or a live trading path.
 
 ## Phase 3 experiment quick start
 
@@ -486,7 +453,7 @@ llm-arbitrage plan-matrix \
   --output .phase3-runs/matrix.json
 ```
 
-`run` refuses silent overwrite. `--force` is explicit and is appropriate only for disposable local evidence.
+`run` refuses silent overwrite. `--force` is for disposable local evidence only.
 
 ## Phase 4 trust/OOS commands
 
@@ -509,41 +476,13 @@ Use `make phase4-smoke` for the complete credential-free local flow. Generated p
 
 ## Evidence boundaries and non-goals
 
-The repository can support claims about:
+Supported evidence includes typed offline inputs, deterministic transformations, paper execution outcomes, causal SQLite records, bundle byte integrity, signature validity, local signer allowlist decisions, asserted lineage ancestry, matrix/evaluation identity binding, and registered OOS coverage.
 
-```text
-typed offline inputs
-deterministic transformations
-paper execution outcomes
-causal SQLite records
-bundle byte integrity
-signature validity
-local signer allowlist decisions
-asserted lineage ancestry
-matrix/evaluation identity binding
-registered OOS coverage
-```
-
-It cannot support claims about:
-
-```text
-source market-data authenticity
-legal identity of a signer
-live exchange/broker state
-account registration or funding
-withdrawals
-realized trading profit
-future performance
-risk-free arbitrage
-automatic candidate selection
-release or production observation
-```
+Unsupported claims include original market-data authenticity, legal signer identity, live venue/account state, deposits/withdrawals, realized trading profit, future performance, risk-free arbitrage, automatic candidate selection, release state, and production observation.
 
 Private keys, API secrets, seed phrases, account identifiers, withdrawal authority, browser sessions, credential-bearing URLs, external order endpoints, venue SDKs, network probes, and a live-mode branch are prohibited.
 
 ## Human Admit
-
-The following remain human or separately trusted-operator actions:
 
 ```text
 semantic conflict resolution
