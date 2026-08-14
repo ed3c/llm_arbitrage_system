@@ -144,7 +144,7 @@ def _integer(value: Any) -> int:
         return 0
     if isinstance(value, bool) or not isinstance(value, int):
         raise ValueError("performance count must be an integer")
-    return value
+    return int(value)
 
 
 def _average_decimal(values: list[Decimal]) -> str | None:
