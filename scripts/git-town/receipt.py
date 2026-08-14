@@ -226,50 +226,77 @@ def run_sync(
     version = _admit_tool(tool, environment)
     shape = command_shape(tool, dry_run=dry_run)
 
+    # The tool runs in its own session so a timeout can reap the whole process
+    # tree. `subprocess.run(timeout=...)` kills only the direct child, which
+    # leaves grandchildren running while the adapter reports a clean stop.
+    process = subprocess.Popen(
+        shape,
+        cwd=repository,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+        env=dict(environment),
+        start_new_session=True,
+    )
     try:
-        completed = subprocess.run(
-            shape,
-            cwd=repository,
-            capture_output=True,
-            text=True,
-            timeout=timeout_seconds,
-            check=False,
-            env=dict(environment),
-        )
-    except subprocess.TimeoutExpired as expired:
-        return {
-            "schema": RUN_SCHEMA,
-            "mode": "dry-run" if dry_run else "live",
-            "tool_version": version,
-            "command_shape": shape[1:],
-            "exit_code": None,
-            "timed_out": True,
-            "timeout_seconds": timeout_seconds,
-            "streams": [
-                _stream_record("stdout", (expired.stdout or b"").decode("utf-8", "replace")),
-                _stream_record("stderr", (expired.stderr or b"").decode("utf-8", "replace")),
-            ],
-            "result": RESULT_BLOCKED_TIMEOUT,
-        }
+        stdout, stderr = process.communicate(timeout=timeout_seconds)
+        residue = {"process_group_reaped": True, "killed_on_timeout": False}
+        timed_out = False
+    except subprocess.TimeoutExpired:
+        residue = {**_reap_process_group(process), "killed_on_timeout": True}
+        stdout, stderr = process.communicate()
+        timed_out = True
 
     return {
         "schema": RUN_SCHEMA,
         "mode": "dry-run" if dry_run else "live",
         "tool_version": version,
         "command_shape": shape[1:],
-        "exit_code": completed.returncode,
-        "timed_out": False,
+        "exit_code": None if timed_out else process.returncode,
+        "timed_out": timed_out,
         "timeout_seconds": timeout_seconds,
+        "residue": residue,
         "streams": [
-            _stream_record("stdout", completed.stdout),
-            _stream_record("stderr", completed.stderr),
+            _stream_record("stdout", stdout or ""),
+            _stream_record("stderr", stderr or ""),
         ],
-        "result": _classify(
-            f"{completed.stdout}\n{completed.stderr}",
-            returncode=completed.returncode,
-            repository=repository,
+        "result": (
+            RESULT_BLOCKED_TIMEOUT
+            if timed_out
+            else _classify(
+                f"{stdout}\n{stderr}", returncode=process.returncode, repository=repository
+            )
         ),
     }
+
+
+def _reap_process_group(process: subprocess.Popen[str]) -> dict[str, Any]:
+    """Kill the tool's whole session and report honestly whether it died.
+
+    Residue is reported, never assumed away: a surviving process after a
+    timeout is exactly the condition a cleanup lane exists to surface.
+    """
+
+    import contextlib
+    import os
+    import signal
+    import time
+
+    try:
+        group = os.getpgid(process.pid)
+    except ProcessLookupError:
+        return {"process_group_reaped": True}
+    with contextlib.suppress(ProcessLookupError, PermissionError):
+        os.killpg(group, signal.SIGKILL)
+    for _ in range(100):
+        try:
+            os.killpg(group, 0)
+        except ProcessLookupError:
+            return {"process_group_reaped": True}
+        except PermissionError:  # pragma: no cover - group exists but is not ours
+            return {"process_group_reaped": False}
+        time.sleep(0.02)
+    return {"process_group_reaped": False}
 
 
 # --- independent verification --------------------------------------------

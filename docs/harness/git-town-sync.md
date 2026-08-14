@@ -96,6 +96,13 @@ four lane results, and the rollback subject. Files are written read-only and
 named by their own content digest, so an identical receipt is idempotent and a
 changed subject is a different file. The ledger is never rewritten in place.
 
+**Signal: the tool spawned children and then hung.**
+The tool runs in its own session and a timeout reaps the whole group.
+`subprocess.run(timeout=...)` kills only the direct child, which leaves
+grandchildren running while the adapter reports a clean stop. The run record
+carries a `residue` lane with `process_group_reaped`; if a process survives the
+kill it is reported as `false` rather than assumed away.
+
 **Signal: streams may contain something sensitive.**
 They never reach a receipt raw. Each stream is stored as a SHA-256, a byte
 count, a truncation flag, and a bounded excerpt with credential URLs replaced.
