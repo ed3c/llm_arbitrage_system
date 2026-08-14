@@ -15,6 +15,7 @@ state/
 experiment-runs/
 .phase4-runs/
 .phase4-keys/
+.phase5-runs/
 *.attestation.json
 *.registry.sqlite3
 .DS_Store
