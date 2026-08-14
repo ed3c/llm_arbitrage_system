@@ -1,0 +1,33 @@
+schema_version: 1
+
+request:
+  request_id: decision-request-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+  canonical_sha256: bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+
+dossier:
+  dossier_id: selection-dossier-cccccccccccccccccccccccccccccccccccccccc
+  sha256: dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
+
+requested_candidate_id: candidate-example
+decision: defer
+
+reviewer:
+  subject: independent-human-reviewer
+  role: independent_reviewer
+
+rationale: >-
+  Defer the research-only request pending additional independently sourced
+  terminal-mark evidence and a longer non-overlapping out-of-sample history.
+
+reviewed_at: "2026-08-15T00:00:00Z"
+
+risk_acknowledgements:
+  - decision_is_research_only
+  - deployment_not_authorized
+  - future_profitability_unproven
+  - human_accountability_retained
+  - live_trading_not_authorized
+  - source_market_truth_unverified
+
+deployment_authorized: false
+trading_authorized: false
