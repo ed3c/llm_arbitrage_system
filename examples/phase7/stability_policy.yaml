@@ -1,0 +1,11 @@
+schema_version: 1
+mode: descriptive_only
+diagnostics:
+  minimum_window_count: 3
+  zero_pnl_tolerance_usd: "0"
+  minimum_positive_window_fraction: "0.5"
+  maximum_largest_absolute_pnl_share: "0.75"
+  minimum_return_observation_count: 2
+  maximum_drawdown_pct: "20"
+  maximum_alpha_decay_bps_per_window: null
+  candidate_family_warning_threshold: 1
