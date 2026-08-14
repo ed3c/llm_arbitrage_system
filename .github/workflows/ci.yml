@@ -64,6 +64,8 @@ jobs:
         run: bash scripts/phase4_smoke.sh
       - name: Phase 5 resumable campaign smoke
         run: bash scripts/phase5_smoke.sh
+      - name: Phase 6 valuation and OOS statistics smoke
+        run: bash scripts/phase6_smoke.sh
 
   compatibility:
     name: Python ${{ matrix.python-version }}
