@@ -8,7 +8,6 @@ main = "main"
 
 [create]
 new-branch-type = "feature"
-push-new-branches = false
 share-new-branches = "no"
 stash = false
 
