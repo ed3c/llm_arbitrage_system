@@ -8,15 +8,15 @@ Current live-adapter state:
 
 ```text
 host admission:          NOT_EXERCISED (#15)
-task-packet validator:   NOT_IMPLEMENTED (#16)
-worktree/lease doctor:   NOT_IMPLEMENTED (#17)
+task-packet validator:   IMPLEMENTED (#16)   scripts/git-town/task_packet.py
+worktree/lease doctor:   IMPLEMENTED (#17)   scripts/git-town/doctor.sh, lease.py
 bounded sync/receipts:   NOT_IMPLEMENTED (#18)
 fail-closed canaries:    NOT_IMPLEMENTED (#19)
 publication gate:        NOT_IMPLEMENTED (#20)
 live adoption audit:     NOT_EXERCISED (#21)
 ```
 
-Until the required owner issues merge and their exact-subject receipts pass, this file is a static contract and live Worker execution returns `BLOCKED_TOOL_ADMISSION` or `BLOCKED_POLICY`.
+`IMPLEMENTED` means the mechanism and its mutation controls exist and pass; it does not mean the lane was exercised against a live Git Town run. Until the remaining owner issues merge and their exact-subject receipts pass, live Worker execution still returns `BLOCKED_TOOL_ADMISSION` — host admission (#15) is unexercised, so `live_execution_admitted` remains `false` in `docs/git/REPO_PROFILE.md`.
 
 ## Worker identity
 
@@ -67,6 +67,15 @@ The Worker evaluates every check before any mutating command:
    - stdout/stderr capture is bounded and redacted before receipt storage.
 
 Failure maps to one stable blocked result and performs no synchronization.
+
+Steps 1 and 2's packet fields are enforced by `scripts/git-town/task_packet.py` (#16). Steps 3 to 5 are enforced by `scripts/git-town/doctor.sh` (#17), which collects repository facts with fixed Git commands and hands them to `scripts/git-town/lease.py` for typed judgment and the branch/path lease. Both emit one canonical receipt on stdout and keep the reason on stderr; both exit non-zero on any blocked result.
+
+```bash
+python scripts/git-town/task_packet.py --packet PACKET.yaml --emit-lease LEASE.json
+scripts/git-town/doctor.sh --head-branch B --allowed-path P [--allowed-path P]...
+```
+
+The doctor resolves its lease store from the logical selector `HOST_LLM_ARBITRAGE_LEASES`; an unresolved selector is `BLOCKED_POLICY`, never a default path. The origin URL is passed on stdin so a credential-bearing remote is not published to the process table by the very check that rejects it.
 
 ## Task execution
 
