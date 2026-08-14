@@ -10,7 +10,7 @@ Current live-adapter state:
 host admission:          NOT_EXERCISED (#15)
 task-packet validator:   IMPLEMENTED (#16)   scripts/git-town/task_packet.py
 worktree/lease doctor:   IMPLEMENTED (#17)   scripts/git-town/doctor.sh, lease.py
-bounded sync/receipts:   NOT_IMPLEMENTED (#18)
+bounded sync/receipts:   IMPLEMENTED (#18)   scripts/git-town/sync.sh, receipt.py
 fail-closed canaries:    NOT_IMPLEMENTED (#19)
 publication gate:        NOT_IMPLEMENTED (#20)
 live adoption audit:     NOT_EXERCISED (#21)
@@ -73,7 +73,10 @@ Steps 1 and 2's packet fields are enforced by `scripts/git-town/task_packet.py` 
 ```bash
 python scripts/git-town/task_packet.py --packet PACKET.yaml --emit-lease LEASE.json
 scripts/git-town/doctor.sh --head-branch B --allowed-path P [--allowed-path P]...
+scripts/git-town/sync.sh   --head-branch B --allowed-path P [--allowed-path P]... [--dry-run-only]
 ```
+
+Steps 2 to 7 below are performed by `scripts/git-town/sync.sh` (#18), which sequences the typed operations in `scripts/git-town/receipt.py`: `capture`, `sync`, `verify`, `append`. The Git Town executable is resolved from the logical selector `HOST_GIT_TOWN_BIN`; while issue #15 has admitted no host executable, every real invocation returns `BLOCKED_TOOL_ADMISSION`.
 
 The doctor resolves its lease store from the logical selector `HOST_LLM_ARBITRAGE_LEASES`; an unresolved selector is `BLOCKED_POLICY`, never a default path. The origin URL is passed on stdin so a credential-bearing remote is not published to the process table by the very check that rejects it.
 
