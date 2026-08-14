@@ -8,12 +8,12 @@ from statistics import fmean, pstdev
 from typing import Any
 
 from llm_arbitrage_system.domain.contracts import (
+    ZERO,
     ApprovedTradePlan,
     ExecutionResult,
     ExecutionStatus,
     Fill,
     Side,
-    ZERO,
 )
 
 _BPS = Decimal("10000")
