@@ -1,0 +1,14 @@
+schema_version: 1
+mode: human_review_only
+admission:
+  require_complete_coverage: true
+  minimum_evaluation_count: 3
+  maximum_drawdown_pct: "20"
+  minimum_annualized_sharpe_ratio: null
+  maximum_alpha_decay_bps_per_window: null
+  minimum_oos_pnl_slope_bps_per_window: null
+  minimum_total_mark_to_market_pnl_usd: "0"
+  minimum_positive_window_fraction: "0.5"
+multiple_testing:
+  mode: warn_only
+  maximum_candidates_without_warning: 1
