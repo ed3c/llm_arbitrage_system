@@ -37,6 +37,29 @@ Upstream references:
 
 Issue #15 must create a host-bound, subject-bound receipt with every lane below. The exact selected artifact depends on the trusted host platform and architecture, so the repository does not guess it.
 
+## How to produce the receipt
+
+```bash
+scripts/git-town/admit.sh
+```
+
+Ten stages. It measures everything measurable on the host — platform and architecture, the checksums manifest against the digest pinned here, the selected artifact's SHA-256 against that manifest, the extracted executable's digest, its `--version` output, and whether `.git-town.toml` parses under it — and asks a human only for the four decisions this issue defers to a person:
+
+```text
+who names the acquisition method, and which exact asset
+who owns the SBOM/transitive review, and their decision
+who owns the required-notices review, and their decision
+who accepts on behalf of the organization
+```
+
+Answering `SKIP`, or giving an owner without a decision, records that lane as `NOT_EXERCISED`. **No lane is ever defaulted to `PASS`.** The wizard re-reads the pins above from `docs/git/REPO_PROFILE.md` and stops if they have drifted from its own copies, so it cannot admit against a policy it no longer matches.
+
+`scripts/git-town/admission_receipt.py` turns the resulting lane ledger into one content-addressed, read-only receipt under `receipts/git-town/admission/`. Its `--selftest` plants every required lane at `FAIL` and at `NOT_EXERCISED`, one at a time, and asserts each one blocks admission on its own; `tests/git-town/test_admission_receipt.py` runs the same controls in CI.
+
+The wizard installs nothing system-wide, commits no binary, and deletes nothing: downloaded artifacts and the lane ledger are left in a scratch directory as evidence. Receipts record digests only — no absolute host paths, which `docs/git/REPO_PROFILE.md` denies in tracked files.
+
+Nothing about this entrypoint substitutes for the decisions. It makes them recordable in one sitting; a human still makes them.
+
 | Required lane | Current state | Positive assertion | Negative control |
 | --- | --- | --- | --- |
 | Host platform and architecture | `NOT_EXERCISED` | selected release artifact matches host | wrong architecture is rejected |
