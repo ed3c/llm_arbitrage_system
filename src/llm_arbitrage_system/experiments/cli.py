@@ -30,6 +30,17 @@ from llm_arbitrage_system.experiments.manifest import resolve_code_revision
 from llm_arbitrage_system.experiments.oos_statistics import build_oos_statistics
 from llm_arbitrage_system.experiments.registry import ExperimentRegistry
 from llm_arbitrage_system.experiments.runner import run_experiment
+from llm_arbitrage_system.experiments.selection_diagnostics import (
+    build_selection_diagnostics,
+)
+from llm_arbitrage_system.experiments.selection_dossier import (
+    build_selection_dossier,
+)
+from llm_arbitrage_system.experiments.selection_policy import load_selection_policy
+from llm_arbitrage_system.experiments.selection_signing import (
+    sign_selection_dossier,
+    verify_selection_dossier_attestation,
+)
 from llm_arbitrage_system.experiments.signing import (
     generate_signing_keypair,
     sign_bundle,
@@ -69,6 +80,8 @@ def build_parser() -> argparse.ArgumentParser:
     validate_marks.add_argument("marks", type=Path)
     validate_statistics = subparsers.add_parser("validate-statistics-inputs")
     validate_statistics.add_argument("inputs", type=Path)
+    validate_selection_policy = subparsers.add_parser("validate-selection-policy")
+    validate_selection_policy.add_argument("policy", type=Path)
 
     run = subparsers.add_parser("run")
     run.add_argument("--dataset", type=Path, required=True)
@@ -159,6 +172,32 @@ def build_parser() -> argparse.ArgumentParser:
     verify_statistics.add_argument("--attestation", type=Path, required=True)
     verify_statistics.add_argument("--trusted-public-key", type=Path)
 
+    diagnostics = subparsers.add_parser("selection-diagnostics")
+    diagnostics.add_argument("--policy", type=Path, required=True)
+    diagnostics.add_argument("--statistics", type=Path, required=True)
+    diagnostics.add_argument("--output", type=Path, required=True)
+    diagnostics.add_argument("--code-revision")
+    diagnostics.add_argument("--force", action="store_true")
+
+    dossier = subparsers.add_parser("build-selection-dossier")
+    dossier.add_argument("--policy", type=Path, required=True)
+    dossier.add_argument("--statistics", type=Path, required=True)
+    dossier.add_argument("--diagnostics", type=Path, required=True)
+    dossier.add_argument("--output", type=Path, required=True)
+    dossier.add_argument("--code-revision")
+    dossier.add_argument("--force", action="store_true")
+
+    sign_dossier = subparsers.add_parser("sign-selection-dossier")
+    sign_dossier.add_argument("--dossier", type=Path, required=True)
+    sign_dossier.add_argument("--private-key", type=Path, required=True)
+    sign_dossier.add_argument("--output", type=Path, required=True)
+    sign_dossier.add_argument("--force", action="store_true")
+
+    verify_dossier = subparsers.add_parser("verify-selection-dossier")
+    verify_dossier.add_argument("--dossier", type=Path, required=True)
+    verify_dossier.add_argument("--attestation", type=Path, required=True)
+    verify_dossier.add_argument("--trusted-public-key", type=Path)
+
     registry_init = subparsers.add_parser("registry-init")
     registry_init.add_argument("registry", type=Path)
     registry_trust = subparsers.add_parser("registry-trust-key")
@@ -214,6 +253,8 @@ def _dispatch(arguments: argparse.Namespace) -> dict[str, Any]:
         return load_terminal_marks(arguments.marks).summary()
     if command == "validate-statistics-inputs":
         return load_statistics_inputs(arguments.inputs).summary()
+    if command == "validate-selection-policy":
+        return load_selection_policy(arguments.policy).summary()
     if command == "verify":
         return verify_bundle(arguments.bundle).as_dict()
     if command == "run":
@@ -373,6 +414,62 @@ def _dispatch(arguments: argparse.Namespace) -> dict[str, Any]:
     if command == "verify-statistics":
         return verify_statistics_attestation(
             arguments.report,
+            arguments.attestation,
+            trusted_public_key_path=arguments.trusted_public_key,
+        ).as_dict()
+    if command == "selection-diagnostics":
+        diagnostics_output = _available_output(
+            arguments.output,
+            force=bool(arguments.force),
+        )
+        diagnostics_report = build_selection_diagnostics(
+            policy_path=arguments.policy,
+            statistics_report_path=arguments.statistics,
+            code_revision=resolve_code_revision(
+                arguments.code_revision,
+                cwd=Path.cwd(),
+            ),
+        )
+        write_json(diagnostics_output, diagnostics_report.as_dict())
+        return {"output": str(diagnostics_output), **diagnostics_report.as_dict()}
+    if command == "build-selection-dossier":
+        dossier_output = _available_output(
+            arguments.output,
+            force=bool(arguments.force),
+        )
+        dossier_report = build_selection_dossier(
+            policy_path=arguments.policy,
+            statistics_report_path=arguments.statistics,
+            diagnostics_path=arguments.diagnostics,
+            code_revision=resolve_code_revision(
+                arguments.code_revision,
+                cwd=Path.cwd(),
+            ),
+        )
+        write_json(dossier_output, dossier_report.as_dict())
+        return {"output": str(dossier_output), **dossier_report.as_dict()}
+    if command == "sign-selection-dossier":
+        dossier_document = sign_selection_dossier(
+            arguments.dossier,
+            arguments.private_key,
+            arguments.output,
+            force=bool(arguments.force),
+        )
+        dossier_signing_payload = dossier_document.get("payload")
+        if not isinstance(dossier_signing_payload, dict):
+            raise RuntimeError("selection dossier signer returned an invalid payload")
+        dossier_identity = dossier_signing_payload.get("dossier")
+        if not isinstance(dossier_identity, dict):
+            raise RuntimeError("selection dossier signer returned an invalid identity")
+        return {
+            "attestation": str(Path(arguments.output).resolve()),
+            "dossier_id": dossier_identity["dossier_id"],
+            "dossier_sha256": dossier_identity["dossier_sha256"],
+            "key_id": dossier_signing_payload["key_id"],
+        }
+    if command == "verify-selection-dossier":
+        return verify_selection_dossier_attestation(
+            arguments.dossier,
             arguments.attestation,
             trusted_public_key_path=arguments.trusted_public_key,
         ).as_dict()

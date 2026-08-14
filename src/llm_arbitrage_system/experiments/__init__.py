@@ -23,6 +23,27 @@ from llm_arbitrage_system.experiments.oos_statistics import (
 )
 from llm_arbitrage_system.experiments.registry import ExperimentRegistry
 from llm_arbitrage_system.experiments.runner import ExperimentRunResult, run_experiment
+from llm_arbitrage_system.experiments.selection_diagnostics import (
+    SelectionDiagnosticsReport,
+    build_selection_diagnostics,
+)
+from llm_arbitrage_system.experiments.selection_dossier import (
+    SelectionDiagnosticsSnapshot,
+    SelectionDossier,
+    SelectionDossierSnapshot,
+    build_selection_dossier,
+    load_selection_diagnostics,
+    load_selection_dossier,
+)
+from llm_arbitrage_system.experiments.selection_policy import (
+    SelectionPolicySnapshot,
+    load_selection_policy,
+)
+from llm_arbitrage_system.experiments.selection_signing import (
+    SelectionDossierAttestationResult,
+    sign_selection_dossier,
+    verify_selection_dossier_attestation,
+)
 from llm_arbitrage_system.experiments.signing import sign_bundle, verify_attestation
 from llm_arbitrage_system.experiments.statistics_inputs import (
     StatisticsInputSnapshot,
@@ -54,14 +75,25 @@ __all__ = [
     "ExperimentRunResult",
     "OOSStatisticsReport",
     "PlannedEvaluationRunResult",
+    "SelectionDiagnosticsReport",
+    "SelectionDiagnosticsSnapshot",
+    "SelectionDossier",
+    "SelectionDossierAttestationResult",
+    "SelectionDossierSnapshot",
+    "SelectionPolicySnapshot",
     "StatisticsAttestationVerificationResult",
     "StatisticsInputSnapshot",
     "StatisticsReportSnapshot",
     "TerminalMarksSnapshot",
     "build_oos_statistics",
+    "build_selection_diagnostics",
+    "build_selection_dossier",
     "campaign_status",
     "load_campaign_spec",
     "load_jsonl_dataset",
+    "load_selection_diagnostics",
+    "load_selection_dossier",
+    "load_selection_policy",
     "load_statistics_inputs",
     "load_statistics_report",
     "load_terminal_marks",
@@ -69,8 +101,10 @@ __all__ = [
     "run_experiment",
     "run_planned_evaluation",
     "sign_bundle",
+    "sign_selection_dossier",
     "sign_statistics_report",
     "value_bundle",
     "verify_attestation",
+    "verify_selection_dossier_attestation",
     "verify_statistics_attestation",
 ]

@@ -1,6 +1,6 @@
 PYTHON ?= python
 
-.PHONY: install lint typecheck test phase3-smoke phase4-smoke phase5-smoke phase6-smoke check
+.PHONY: install lint typecheck test phase3-smoke phase4-smoke phase5-smoke phase6-smoke phase7-smoke check
 
 install:
 	$(PYTHON) -m pip install -e ".[dev]"
@@ -31,5 +31,8 @@ phase5-smoke:
 
 phase6-smoke:
 	bash scripts/phase6_smoke.sh
+
+phase7-smoke:
+	bash scripts/phase7_smoke.sh
 
 check: lint typecheck test
