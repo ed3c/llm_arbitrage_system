@@ -201,7 +201,7 @@ tests/git-town/                   #16–#20  mechanism selftests and controls
 
 State: `MERGED` as mechanisms; `NOT_EXERCISED` as live lanes.
 
-Every entrypoint carries `--selftest`, and the `Git Town delivery mechanisms` CI job runs all of them plus `tests/git-town` on every push. None has ever run against a real Git Town executable: `HOST_GIT_TOWN_BIN` is unresolved, `live_execution_admitted` is `false`, and any real invocation returns `BLOCKED_TOOL_ADMISSION`.
+Every entrypoint carries `--selftest`, and the `Git Town delivery mechanisms` CI job runs all of them plus `tests/git-town` on every push. Git Town `v24.0.0` is admitted for `darwin_arm64` by receipt `eda73fcc` (#15). Admission makes a live run possible; it does not make one observed. `live_canary` stays `NOT_EXERCISED` until issue #21 runs it, and a host without its own receipt still returns `BLOCKED_TOOL_ADMISSION`.
 
 ## Documentation stack (merged)
 
@@ -219,7 +219,7 @@ These branches and PR bases formed a Git Town-compatible serial stack, but no lo
 
 | Issue | Branch | Mechanism | State |
 | --- | --- | --- | --- |
-| [#15](https://github.com/ed3c/llm_arbitrage_system/issues/15) | `infra/git-town-admission` (never created) | exact Git Town host admission receipt | `BLOCKED` on a named host acquisition method and legal/transitive review owner |
+| [#15](https://github.com/ed3c/llm_arbitrage_system/issues/15) | `infra/git-town-admitted` | exact Git Town host admission receipt | `PASS` for `darwin_arm64`, receipt `eda73fcc` |
 | [#16](https://github.com/ed3c/llm_arbitrage_system/issues/16) | `tooling/git-town-task-packet-validator` | typed task-packet/path-lease validator | `MERGED` |
 | [#17](https://github.com/ed3c/llm_arbitrage_system/issues/17) | `tooling/git-town-worktree-doctor` | linked-worktree and lease doctor | `MERGED` |
 | [#18](https://github.com/ed3c/llm_arbitrage_system/issues/18) | `tooling/git-town-bounded-sync` | dry-run + bounded no-push synchronization and receipts | `MERGED` |

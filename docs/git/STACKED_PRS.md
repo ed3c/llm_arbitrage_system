@@ -185,7 +185,7 @@ Issue #16 named `infra/git-town-admission` as its parent. That branch does not e
 
 Each mechanism above ships with its selftest and its disagreement-producing controls, and the `Git Town delivery mechanisms` CI job runs all of them on every push. That is `mechanism_selftest` and `negative_or_mutation_control` evidence.
 
-It is **not** live-lane evidence. No mechanism has ever run against a real Git Town executable: `HOST_GIT_TOWN_BIN` is unresolved, `live_execution_admitted` is `false` in `docs/git/REPO_PROFILE.md`, and `scripts/git-town/receipt.py` returns `BLOCKED_TOOL_ADMISSION` on any real host. The canaries drive `fixtures/git-town/canary_tool.sh`, which reproduces the *conditions* the protocol enumerates, not Git Town's semantics.
+It is **not** live-lane evidence. Git Town `v24.0.0` is admitted for `darwin_arm64` by receipt `eda73fcc` (#15), so `scripts/git-town/receipt.py` can now reach the tool on that host — but no mechanism has yet been observed driving a real Git Town run, and any other host still returns `BLOCKED_TOOL_ADMISSION`. The canaries drive `fixtures/git-town/canary_tool.sh`, which reproduces the *conditions* the protocol enumerates, not Git Town's semantics.
 
 `live_canary` therefore remains `NOT_EXERCISED` for every row, and issue #21 owns closing that gap.
 

@@ -293,3 +293,52 @@ def test_the_bundled_selftest_passes() -> None:
 
     assert completed.returncode == 0, completed.stderr
     assert "PASS" in completed.stderr
+
+
+# --- the tracked receipt and the profile must agree ----------------------
+
+
+ADMISSION_DIR = REPOSITORY_ROOT / "receipts" / "git-town" / "admission"
+PROFILE = REPOSITORY_ROOT / "docs" / "git" / "REPO_PROFILE.md"
+
+
+def _tracked_passing_receipts() -> list[dict[str, Any]]:
+    if not ADMISSION_DIR.is_dir():
+        return []
+    receipts = [admission.read_receipt(path) for path in sorted(ADMISSION_DIR.glob("*.json"))]
+    return [receipt for receipt in receipts if receipt["result"] == "PASS"]
+
+
+def test_every_tracked_receipt_is_internally_consistent() -> None:
+    for path in sorted(ADMISSION_DIR.glob("*.json")) if ADMISSION_DIR.is_dir() else []:
+        receipt = admission.read_receipt(path)
+        recomputed = "PASS" if not receipt["blocked_lanes"] else "BLOCKED_TOOL_ADMISSION"
+        assert receipt["result"] == recomputed, path.name
+        assert receipt["live_execution_admitted"] is (receipt["result"] == "PASS"), path.name
+        assert set(receipt["lanes"]) == set(admission.REQUIRED_LANES), path.name
+
+
+def test_the_profile_claims_admission_only_when_a_passing_receipt_exists() -> None:
+    profile = PROFILE.read_text(encoding="utf-8")
+    claims_admitted = "live_execution_admitted: true" in profile
+    passing = _tracked_passing_receipts()
+
+    assert claims_admitted == bool(passing), (
+        "docs/git/REPO_PROFILE.md and receipts/git-town/admission/ disagree about "
+        "whether a host has been admitted"
+    )
+
+
+def test_the_profile_digests_match_the_passing_receipt() -> None:
+    passing = _tracked_passing_receipts()
+    if not passing:
+        pytest.skip("no admitted host recorded")
+    profile = PROFILE.read_text(encoding="utf-8")
+
+    for receipt in passing:
+        # A digest quoted in the profile that no receipt supports is exactly the
+        # drift this control exists to catch.
+        assert receipt["artifact"]["sha256"] in profile
+        assert receipt["executable"]["sha256"] in profile
+        assert receipt["executable"]["version_output"] in profile
+        assert receipt["artifact"]["name"] in profile
