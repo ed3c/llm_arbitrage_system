@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import json
 import sqlite3
-from collections.abc import Mapping
 from dataclasses import dataclass, field
 from datetime import datetime
 from decimal import Decimal, InvalidOperation
@@ -169,10 +168,19 @@ class BundleValuationReport:
             },
             "positions": [position.as_dict() for position in self.positions],
             "assumptions": [
-                "Terminal marks are caller-supplied evidence; their market-source authenticity is not proven.",
+                (
+                    "Terminal marks are caller-supplied evidence; their market-source "
+                    "authenticity is not proven."
+                ),
                 "Settlement cash is kept separate from mark-to-market PnL.",
-                "Funding accrual, borrow costs, margin interest, liquidation mechanics, and corporate actions are excluded.",
-                "This terminal valuation does not provide an intraperiod equity curve, drawdown, Sharpe ratio, or alpha decay.",
+                (
+                    "Funding accrual, borrow costs, margin interest, liquidation "
+                    "mechanics, and corporate actions are excluded."
+                ),
+                (
+                    "This terminal valuation does not provide an intraperiod equity "
+                    "curve, drawdown, Sharpe ratio, or alpha decay."
+                ),
             ],
         }
 
@@ -284,7 +292,10 @@ def value_bundle(
     if len(revision) > 160:
         raise ValueError("code_revision is too long")
     resolved_version = package_version or installed_package_version()
-    execution = _load_execution_evidence(bundle / "evidence.sqlite3", verification.run_id)
+    execution = _load_execution_evidence(
+        bundle / "evidence.sqlite3",
+        verification.run_id,
+    )
 
     quantities: dict[str, Decimal] = {}
     settlement_cash = Decimal("0")
@@ -302,8 +313,9 @@ def value_bundle(
     open_quantities = {
         symbol: quantity for symbol, quantity in quantities.items() if quantity != 0
     }
+    marks_by_symbol = marks.by_symbol
     required_symbols = set(open_quantities)
-    supplied_symbols = set(marks.by_symbol)
+    supplied_symbols = set(marks_by_symbol)
     missing = sorted(required_symbols - supplied_symbols)
     extra = sorted(supplied_symbols - required_symbols)
     if missing:
@@ -315,7 +327,7 @@ def value_bundle(
     market_value = Decimal("0")
     for symbol in sorted(open_quantities):
         quantity = open_quantities[symbol]
-        mark_price = marks.by_symbol[symbol]
+        mark_price = marks_by_symbol[symbol]
         value = quantity * mark_price
         market_value += value
         positions.append(
@@ -362,7 +374,8 @@ def value_bundle(
 
 
 def _load_execution_evidence(path: Path, run_id: str) -> _ExecutionEvidence:
-    connection = sqlite3.connect(f"file:{path.resolve()}?mode=ro", uri=True)
+    uri = f"{path.resolve().as_uri()}?mode=ro&immutable=1"
+    connection = sqlite3.connect(uri, uri=True)
     connection.row_factory = sqlite3.Row
     try:
         rows = connection.execute(
@@ -412,7 +425,10 @@ def _parse_fill(value: object, source: str, index: int) -> _FillEvidence:
         raise ValueError(f"execution {source} item {index} is not a valuatable fill")
     quantity = _decimal(fill.get("quantity"), f"execution {source} quantity")
     price = _decimal(fill.get("price"), f"execution {source} price")
-    fee = _non_negative_decimal(fill.get("fee_usd", "0"), f"execution {source} fee")
+    fee = _non_negative_decimal(
+        fill.get("fee_usd", "0"),
+        f"execution {source} fee",
+    )
     return _FillEvidence(
         symbol=symbol,
         side=cast(str, side),
