@@ -36,14 +36,6 @@ class CampaignSelection:
     def __post_init__(self) -> None:
         _validate_unique_ids(self.include_evaluation_ids, "include_evaluation_ids")
         _validate_unique_ids(self.exclude_evaluation_ids, "exclude_evaluation_ids")
-        overlap = sorted(
-            set(self.include_evaluation_ids) & set(self.exclude_evaluation_ids)
-        )
-        if overlap:
-            raise ValueError(
-                "campaign selection cannot include and exclude the same evaluations: "
-                + ", ".join(overlap)
-            )
 
 
 @dataclass(frozen=True, slots=True)
@@ -338,7 +330,7 @@ def _integer(payload: Mapping[str, Any], key: str, default: int) -> int:
     value = payload.get(key, default)
     if isinstance(value, bool) or not isinstance(value, int):
         raise ValueError(f"campaign.{key} must be an integer")
-    return value
+    return int(value)
 
 
 def _boolean(payload: Mapping[str, Any], key: str, default: bool) -> bool:
