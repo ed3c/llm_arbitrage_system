@@ -706,8 +706,8 @@ def _validate_statistics_report(report: OOSStatisticsReport) -> None:
     ]
     if len(set(config_hashes)) != len(config_hashes):
         raise ValueError("statistics report contains duplicate candidate configurations")
-    for value in config_hashes:
-        _validate_digest(value, "candidate_config_sha256")
+    for config_hash in config_hashes:
+        _validate_digest(config_hash, "candidate_config_sha256")
     for candidate in report.candidates:
         if not candidate.candidate_id or "\x00" in candidate.candidate_id:
             raise ValueError("candidate_id must be a non-empty NUL-free string")
@@ -723,7 +723,7 @@ def _validate_statistics_report(report: OOSStatisticsReport) -> None:
             and not math.isfinite(candidate.annualized_sharpe_ratio)
         ):
             raise ValueError("candidate Sharpe ratio must be finite")
-        for name, value in (
+        for metric_name, metric_value in (
             (
                 "candidate OOS PnL slope",
                 candidate.oos_pnl_slope_bps_per_window,
@@ -733,8 +733,8 @@ def _validate_statistics_report(report: OOSStatisticsReport) -> None:
                 candidate.alpha_decay_bps_per_window,
             ),
         ):
-            if value is not None and not value.is_finite():
-                raise ValueError(f"{name} must be finite")
+            if metric_value is not None and not metric_value.is_finite():
+                raise ValueError(f"{metric_name} must be finite")
         if candidate.expected_evaluation_count < 1:
             raise ValueError("candidate expected evaluation count must be positive")
         if (
