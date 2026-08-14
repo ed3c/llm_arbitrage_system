@@ -1,0 +1,30 @@
+schema_version: 1
+analytics:
+  efficiency_period: 3
+  kama_fast_period: 2
+  kama_slow_period: 10
+  zscore_window: 5
+  kalman_process_variance: 0.00001
+  kalman_measurement_variance: 0.01
+strategy:
+  scenario_notional_usd: "100"
+  estimated_round_trip_cost_bps: "12"
+  funding_entry_apy_pct: "50"
+  funding_holding_hours: "24"
+  crowd_entry_zscore: 99.0
+  crowd_efficiency_ratio_maximum: 0.2
+  crowd_requires_sentiment: false
+  lead_lag_entry_premium_bps: "150"
+approval:
+  maximum_event_age_seconds: 5.0
+  minimum_edge_bps: "1"
+  maximum_leg_notional_usd: "1000"
+  maximum_gross_exposure_usd: "10000"
+  maximum_leg_imbalance_pct: "0.02"
+  maximum_slippage_bps: "50"
+execution:
+  slippage_bps: "5"
+  fee_bps: "1"
+  fail_leg_indexes: []
+runtime:
+  queue_size: 16
