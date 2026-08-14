@@ -153,6 +153,7 @@ def _write_marks(
         else last_event_at
     )
     timestamp = datetime.fromisoformat(normalized) + timedelta(seconds=lag_seconds)
+    path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(
         json.dumps(
             {
@@ -332,11 +333,14 @@ async def test_oos_statistics_reject_mixed_mark_lags_and_bundle_drift(
         perp="102",
         lag_seconds=120,
     )
-    mixed_inputs = (*inputs[:-1], EvaluationValuationInput(
-        evaluation_id=last.evaluation_id,
-        bundle_path=last.bundle_path,
-        marks_path=mixed_marks,
-    ))
+    mixed_inputs = (
+        *inputs[:-1],
+        EvaluationValuationInput(
+            evaluation_id=last.evaluation_id,
+            bundle_path=last.bundle_path,
+            marks_path=mixed_marks,
+        ),
+    )
     with pytest.raises(ValueError, match="mixed terminal-mark lags"):
         build_oos_statistics(
             registry_path=registry,
