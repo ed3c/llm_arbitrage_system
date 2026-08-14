@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from decimal import Decimal
+from itertools import pairwise
 
 
 def kaufman_efficiency_ratio(prices: list[Decimal], period: int) -> float:
@@ -10,10 +11,7 @@ def kaufman_efficiency_ratio(prices: list[Decimal], period: int) -> float:
         raise ValueError("not enough prices")
     window = prices[-(period + 1) :]
     change = abs(window[-1] - window[0])
-    noise = sum(
-        abs(current - previous)
-        for previous, current in zip(window[:-1], window[1:], strict=True)
-    )
+    noise = sum(abs(current - previous) for previous, current in pairwise(window))
     return 0.0 if noise == 0 else float(change / noise)
 
 
@@ -38,10 +36,7 @@ def kaufman_adaptive_moving_average(
             continue
         window = prices[index - efficiency_period : index + 1]
         change = abs(window[-1] - window[0])
-        noise = sum(
-            abs(current - previous)
-            for previous, current in zip(window[:-1], window[1:], strict=True)
-        )
+        noise = sum(abs(current - previous) for previous, current in pairwise(window))
         efficiency = Decimal("0") if noise == 0 else change / noise
         smoothing = (efficiency * (fast - slow) + slow) ** 2
         result.append(result[-1] + smoothing * (prices[index] - result[-1]))
