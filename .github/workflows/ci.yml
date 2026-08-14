@@ -60,6 +60,8 @@ jobs:
             --config examples/phase3/experiment.yaml \
             --sweep examples/phase3/sweep.yaml \
             --output .phase3-runs/matrix.json
+      - name: Phase 4 trust and registry smoke
+        run: bash scripts/phase4_smoke.sh
 
   compatibility:
     name: Python ${{ matrix.python-version }}
