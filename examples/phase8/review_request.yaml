@@ -1,0 +1,31 @@
+schema_version: 1
+
+dossier:
+  dossier_id: selection-dossier-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+  sha256: bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+
+requested_candidate_id: candidate-example
+requested_scope: research_review_only
+
+requester:
+  subject: human-research-owner
+  role: research_proposer
+
+rationale: >-
+  Request an independent human review of the captured offline evidence without
+  granting deployment, release, credential, or live-trading authority.
+
+requested_at: "2026-08-14T00:00:00Z"
+expires_at: "2026-08-21T00:00:00Z"
+
+risk_acknowledgements:
+  - causal_alpha_unproven
+  - deployment_not_authorized
+  - future_profitability_unproven
+  - human_review_required
+  - live_trading_not_authorized
+  - source_market_truth_unverified
+
+decision: null
+deployment_authorized: false
+trading_authorized: false
