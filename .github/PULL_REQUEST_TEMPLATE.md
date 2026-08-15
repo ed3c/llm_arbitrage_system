@@ -1,138 +1,86 @@
-## Issue and goal
+<!--
+English / 繁體中文
+Keep claims bounded by observed evidence. Do not paste secrets, private source material, customer data, or proprietary repository content.
+Claim 必須受實際 Evidence 限制。不得貼上 Secret、Private source、Customer data 或 Proprietary repository content。
+-->
 
-- Canonical issue:
-- Parent issue:
-- Goal:
-- Non-goals:
-- Evidence boundary:
+## Outcome｜成果
 
-## Stack graph
+<!-- What user-visible or system-visible outcome does this PR deliver? -->
+<!-- 此 PR 交付什麼可被使用者或系統觀察到的成果？ -->
 
-```text
-base
-└── parent
-    └── this head
-        └── child PRs, if any
-```
+## Problem and context｜問題與背景
 
-```yaml
-base_branch: main
-parent_branch: main
-head_branch: exact-head-branch
-stack_class: foundation
-child_prs: []
-```
+Closes #
 
-- [ ] PR base equals the declared parent branch.
-- [ ] Branch ancestry equals the declared stack.
-- [ ] Independent path-disjoint work is modeled as siblings rather than artificial children.
+## Scope｜範圍
 
-## Path lease
+### Included｜包含
 
-```yaml
-allowed_paths:
-  - exact/path/or/bounded-glob
-excluded_paths:
-  - explicit/protected/path
-```
+-
 
-- Changed paths:
-- Sibling lease check:
-- Out-of-lease diff result:
+### Non-goals｜不處理
 
-## Implementation
+-
 
-Describe only behavior present in this PR. Distinguish `MERGED`, `OPEN`, `PLANNED`, `BLOCKED`, `NOT_IMPLEMENTED`, and `NOT_EXERCISED`.
+## Architecture / State Machine impact｜架構／狀態機影響
 
-## State Machine and data flow
+<!-- Name affected states, transitions, trust boundaries, data flows, schemas, and owners. -->
+<!-- 指出受影響的 State、Transition、Trust boundary、Data flow、Schema 與 Owner。 -->
 
-- State Machine owner:
-- Input contract:
-- Output contract:
-- Persistence/evidence:
-- Failure/blocked transitions:
-- Cross-layer invariants preserved:
+## Security, privacy, and licensing｜安全、隱私與授權
 
-## Exact tool / worktree admission
+- [ ] No secrets or private/restricted data are included.
+- [ ] 未包含 Secret 或 Private／Restricted data。
+- [ ] Permission, network, provider, sandbox, approval, and release boundaries are unchanged or documented.
+- [ ] Permission、Network、Provider、Sandbox、Approval 與 Release boundary 未改變或已記錄。
+- [ ] Third-party code/content includes provenance, license, and notices.
+- [ ] 第三方 Code／Content 已附 Provenance、License 與 Notice。
+- [ ] AI-assisted work was reviewed by a human and material assistance is disclosed below.
+- [ ] AI-assisted work 已由 Human review，具實質影響的協助已於下方揭露。
 
-- Git Town required version: `v24.0.0`
-- Admission receipt or state:
-- Linked worktree identity or state:
-- Branch/path lease receipt or state:
-- Local Git Town sync state:
+## Validation evidence｜驗證證據
 
-Use `NOT_EXERCISED` when a live lane was not run. Static config is not a live admission receipt.
+| Command / check | Result | Evidence or limitation |
+|---|---|---|
+| | | |
 
-## Verification
+<!-- Distinguish local, CI, fixture, mock, sandbox, emulator, external runtime, and production evidence. -->
+<!-- 必須區分 Local、CI、Fixture、Mock、Sandbox、Emulator、External runtime 與 Production evidence。 -->
 
-### Positive evals
+## Documentation and i18n｜文件與雙語
 
-```text
-command or typed entrypoint → result → exact commit/tree subject
-```
+- [ ] `README.md` / `README.zh-TW.md` updated when public behavior changed.
+- [ ] Public document pairs were updated together.
+- [ ] Public behavior 改變時已更新 `README.md` / `README.zh-TW.md`。
+- [ ] Public document pairs 已同步更新。
+- [ ] Executable Agent contracts or immutable evidence were not translated in a way that changes semantics.
+- [ ] 未以改變語意的方式翻譯 Executable Agent contract 或 Immutable evidence。
 
-### Negative or mutation controls
+## Compatibility and migration｜相容性與遷移
 
-```text
-planted disagreement → expected blocked/fail state → result → exact subject
-```
+<!-- Breaking changes, data/schema migrations, deprecations, supported versions. -->
+<!-- Breaking change、Data／Schema migration、Deprecation、Supported version。 -->
 
-### Repository gates
+## Rollback｜回復方式
 
-- [ ] `make check`
-- [ ] `make phase3-smoke` when affected
-- [ ] `make phase4-smoke` when affected
-- [ ] current PR-head CI, not an older SHA
+<!-- Exact rollback subject and any irreversible effects. -->
+<!-- 精確 Rollback subject 與不可逆影響。 -->
 
-## Evidence lanes
+## AI assistance disclosure｜AI 協助揭露
 
-| Lane | Result | Subject / receipt |
-| --- | --- | --- |
-| Requirements review |  |  |
-| Static contract |  |  |
-| Mechanism selftest |  |  |
-| Negative/mutation control |  |  |
-| Live Git Town canary |  |  |
-| Local exact-head verification |  |  |
-| Publication decision |  |  |
-| Remote publication |  |  |
-| Remote head/ancestry |  |  |
-| GitHub trusted check |  |  |
-| Cleanup/residue |  |  |
-| Human Admit |  |  |
+<!-- Tool/model, role, human verification, and data destination authorization where relevant. -->
+<!-- Tool／Model、角色、Human verification，以及必要時的 Data destination authorization。 -->
 
-Allowed states: `PASS`, `FAIL`, `ABSENT`, `NOT_IMPLEMENTED`, `NOT_EXERCISED`, `SKIPPED_BY_POLICY`.
+## Reviewer checklist｜Reviewer 檢查
 
-## Publication contract
-
-```yaml
-intent: none
-expected_pr_base: exact-base
-expected_pr_head: exact-head
-draft: true
-post_push_fetch: required
-remote_head_verification: required
-remote_ancestry_verification: required
-```
-
-- [ ] A gate `ALLOW` authorizes one operation only.
-- [ ] Background push, PR-ready transition, workflow rerun and merge remain denied unless explicitly admitted.
-- [ ] This PR remains Draft until the stack checkpoint says otherwise.
-
-## Cleanup and rollback
-
-- Cleanup contract:
-- Residue:
-- Immutable rollback subject:
-- Drift check:
-- Blocked evidence preserved:
-
-## Security and non-claims
-
-- [ ] No exchange/broker credential, wallet/provenance private key, seed phrase, account identifier, withdrawal authority, browser session, credential URL, or secret value is included.
-- [ ] No live trading, source-authenticity, profitability, risk-free, release, production, or Human Admit claim is inferred from lower evidence.
-- [ ] No automatic semantic conflict resolution, `continue`, `skip`, `undo`, `ship`, merge, force push, permission change, or destructive rollback is introduced.
-
-## Human Admit
-
-Name every remaining human-owned action, including merge order and any semantic conflict, legal, permission, billing, release, production, or rollback decision.
+- [ ] Scope is independently reviewable.
+- [ ] Claims do not exceed evidence.
+- [ ] Failure and negative paths are covered where relevant.
+- [ ] Security and privacy boundaries fail closed.
+- [ ] Documentation links and language navigation work.
+- [ ] Scope 可獨立審查。
+- [ ] Claim 未超過 Evidence。
+- [ ] 必要時已涵蓋 Failure 與 Negative path。
+- [ ] Security 與 Privacy boundary 採 Fail closed。
+- [ ] Documentation link 與 Language navigation 可用。
