@@ -1,0 +1,34 @@
+schema_version: 1
+scope: independent_offline_replication
+candidate:
+  candidate_id: candidate-a0c8f92d194d01b5ecaf5dbf
+  candidate_config_sha256: a0c8f92d194d01b5ecaf5dbfa089b2ce230fd3366918a3918943ce005e0c4adc
+independence:
+  minimum_replications: 3
+  minimum_distinct_quorum_signers: 2
+  minimum_distinct_dossier_signers: 2
+  minimum_distinct_statistics_signers: 2
+  require_disjoint_test_semantic_sha256: true
+  require_distinct_matrix_sha256: true
+  require_distinct_dossier_sha256: true
+  require_distinct_quorum_envelope_sha256: true
+  prohibit_statistics_report_reuse: true
+comparability:
+  require_equal_code_revision: true
+  require_equal_package_version: true
+  require_equal_periods_per_year: true
+  require_equal_terminal_mark_lag: true
+acceptance:
+  minimum_research_approved_fraction: "0.67"
+  minimum_positive_replication_fraction: "0.67"
+  minimum_windows_per_replication: 3
+  maximum_failed_replications: 1
+  maximum_insufficient_replications: 0
+  minimum_worst_case_total_pnl_usd: "0"
+  minimum_median_total_pnl_usd: "0"
+authority:
+  human_admit_required: true
+  automatic_promotion: false
+  release_authorized: false
+  deployment_authorized: false
+  trading_authorized: false
