@@ -34,7 +34,9 @@ jobs:
       - name: Install project
         run: python -m pip install -e ".[dev]"
       - name: Ruff
-        run: ruff check .
+        run: |
+          ruff check .
+          ruff format --check .
       - name: Mypy
         run: mypy src
       - name: Tests and coverage
@@ -70,6 +72,8 @@ jobs:
         run: bash scripts/phase7_smoke.sh
       - name: Phase 8 separation-of-duties quorum smoke
         run: bash scripts/phase8_smoke.sh
+      - name: Phase 9 independent replication smoke
+        run: bash scripts/phase9_smoke.sh
 
   compatibility:
     name: Python ${{ matrix.python-version }}
