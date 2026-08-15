@@ -31,6 +31,26 @@ from llm_arbitrage_system.experiments.oos_statistics import (
     build_oos_statistics,
 )
 from llm_arbitrage_system.experiments.registry import ExperimentRegistry
+from llm_arbitrage_system.experiments.replication import (
+    ReplicationCohortEvidence,
+    ReplicationReport,
+    build_replication_report,
+)
+from llm_arbitrage_system.experiments.replication_inputs import (
+    ReplicationInputSnapshot,
+    load_replication_inputs,
+)
+from llm_arbitrage_system.experiments.replication_plan import (
+    ReplicationPlanSnapshot,
+    load_replication_plan,
+)
+from llm_arbitrage_system.experiments.replication_signing import (
+    ReplicationAttestationResult,
+    ReplicationReportSnapshot,
+    load_replication_report,
+    sign_replication_report,
+    verify_replication_attestation,
+)
 from llm_arbitrage_system.experiments.review_evidence import (
     ReviewEvidenceAttestationResult,
     ReviewRecordSnapshot,
@@ -106,6 +126,12 @@ __all__ = [
     "ExperimentRunResult",
     "OOSStatisticsReport",
     "PlannedEvaluationRunResult",
+    "ReplicationAttestationResult",
+    "ReplicationCohortEvidence",
+    "ReplicationInputSnapshot",
+    "ReplicationPlanSnapshot",
+    "ReplicationReport",
+    "ReplicationReportSnapshot",
     "ReviewEvidenceAttestationResult",
     "ReviewQuorumAttestationResult",
     "ReviewQuorumEnvelope",
@@ -123,6 +149,7 @@ __all__ = [
     "StatisticsReportSnapshot",
     "TerminalMarksSnapshot",
     "build_oos_statistics",
+    "build_replication_report",
     "build_review_quorum",
     "build_selection_diagnostics",
     "build_selection_dossier",
@@ -130,6 +157,9 @@ __all__ = [
     "load_campaign_spec",
     "load_decision_request",
     "load_jsonl_dataset",
+    "load_replication_inputs",
+    "load_replication_plan",
+    "load_replication_report",
     "load_review_quorum_envelope",
     "load_review_quorum_inputs",
     "load_review_record",
@@ -144,6 +174,7 @@ __all__ = [
     "run_planned_evaluation",
     "sign_bundle",
     "sign_decision_request",
+    "sign_replication_report",
     "sign_review_quorum_envelope",
     "sign_review_record",
     "sign_selection_dossier",
@@ -151,6 +182,7 @@ __all__ = [
     "value_bundle",
     "verify_attestation",
     "verify_decision_request_attestation",
+    "verify_replication_attestation",
     "verify_review_quorum_attestation",
     "verify_review_record_attestation",
     "verify_selection_dossier_attestation",

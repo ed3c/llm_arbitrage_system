@@ -14,7 +14,7 @@ dependencies = [
 ]
 
 [project.scripts]
-llm-arbitrage = "llm_arbitrage_system.experiments.operator_cli:main"
+llm-arbitrage = "llm_arbitrage_system.experiments.replication_cli:main"
 
 [project.optional-dependencies]
 dev = [
