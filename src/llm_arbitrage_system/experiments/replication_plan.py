@@ -33,32 +33,40 @@ class ReplicationCandidate:
 class ReplicationIndependencePolicy:
     minimum_replications: int = 3
     minimum_distinct_quorum_signers: int = 2
-    require_distinct_dataset_semantic_sha256: bool = True
+    minimum_distinct_dossier_signers: int = 2
+    minimum_distinct_statistics_signers: int = 2
+    require_disjoint_test_semantic_sha256: bool = True
     require_distinct_matrix_sha256: bool = True
     require_distinct_dossier_sha256: bool = True
     require_distinct_quorum_envelope_sha256: bool = True
-    prohibit_phase6_source_report_reuse: bool = True
+    prohibit_statistics_report_reuse: bool = True
 
     def __post_init__(self) -> None:
         if not 2 <= self.minimum_replications <= 64:
             raise ValueError("minimum_replications must be in [2, 64]")
-        if not 1 <= self.minimum_distinct_quorum_signers <= 64:
-            raise ValueError("minimum_distinct_quorum_signers must be in [1, 64]")
-        if self.minimum_distinct_quorum_signers > self.minimum_replications:
-            raise ValueError(
-                "minimum_distinct_quorum_signers cannot exceed minimum_replications"
-            )
+        signer_minima = {
+            "minimum_distinct_quorum_signers": self.minimum_distinct_quorum_signers,
+            "minimum_distinct_dossier_signers": self.minimum_distinct_dossier_signers,
+            "minimum_distinct_statistics_signers": (
+                self.minimum_distinct_statistics_signers
+            ),
+        }
+        for name, value in signer_minima.items():
+            if not 1 <= value <= 64:
+                raise ValueError(f"{name} must be in [1, 64]")
+            if value > self.minimum_replications:
+                raise ValueError(f"{name} cannot exceed minimum_replications")
         required_true = {
-            "require_distinct_dataset_semantic_sha256": (
-                self.require_distinct_dataset_semantic_sha256
+            "require_disjoint_test_semantic_sha256": (
+                self.require_disjoint_test_semantic_sha256
             ),
             "require_distinct_matrix_sha256": self.require_distinct_matrix_sha256,
             "require_distinct_dossier_sha256": self.require_distinct_dossier_sha256,
             "require_distinct_quorum_envelope_sha256": (
                 self.require_distinct_quorum_envelope_sha256
             ),
-            "prohibit_phase6_source_report_reuse": (
-                self.prohibit_phase6_source_report_reuse
+            "prohibit_statistics_report_reuse": (
+                self.prohibit_statistics_report_reuse
             ),
         }
         disabled = sorted(name for name, enabled in required_true.items() if not enabled)
@@ -95,17 +103,19 @@ class ReplicationComparabilityPolicy:
 class ReplicationAcceptancePolicy:
     minimum_research_approved_fraction: Decimal = Decimal("0.67")
     minimum_positive_replication_fraction: Decimal = Decimal("0.67")
+    minimum_windows_per_replication: int = 3
     maximum_failed_replications: int = 1
     maximum_insufficient_replications: int = 0
     minimum_worst_case_total_pnl_usd: Decimal = Decimal("0")
     minimum_median_total_pnl_usd: Decimal = Decimal("0")
-    require_all_reserved_holdouts_positive: bool = True
 
     def __post_init__(self) -> None:
         if not Decimal("0") < self.minimum_research_approved_fraction <= Decimal("1"):
             raise ValueError("minimum_research_approved_fraction must be in (0, 1]")
         if not Decimal("0") < self.minimum_positive_replication_fraction <= Decimal("1"):
             raise ValueError("minimum_positive_replication_fraction must be in (0, 1]")
+        if not 1 <= self.minimum_windows_per_replication <= 4096:
+            raise ValueError("minimum_windows_per_replication must be in [1, 4096]")
         if not 0 <= self.maximum_failed_replications <= 63:
             raise ValueError("maximum_failed_replications must be in [0, 63]")
         if not 0 <= self.maximum_insufficient_replications <= 63:
@@ -114,8 +124,6 @@ class ReplicationAcceptancePolicy:
             raise ValueError("minimum_worst_case_total_pnl_usd must be finite")
         if not self.minimum_median_total_pnl_usd.is_finite():
             raise ValueError("minimum_median_total_pnl_usd must be finite")
-        if not self.require_all_reserved_holdouts_positive:
-            raise ValueError("require_all_reserved_holdouts_positive must remain true")
 
 
 @dataclass(frozen=True, slots=True)
@@ -262,11 +270,13 @@ def parse_replication_plan(payload: Mapping[str, Any]) -> ReplicationPlan:
         {
             "minimum_replications",
             "minimum_distinct_quorum_signers",
-            "require_distinct_dataset_semantic_sha256",
+            "minimum_distinct_dossier_signers",
+            "minimum_distinct_statistics_signers",
+            "require_disjoint_test_semantic_sha256",
             "require_distinct_matrix_sha256",
             "require_distinct_dossier_sha256",
             "require_distinct_quorum_envelope_sha256",
-            "prohibit_phase6_source_report_reuse",
+            "prohibit_statistics_report_reuse",
         },
     )
     independence = ReplicationIndependencePolicy(
@@ -282,9 +292,21 @@ def parse_replication_plan(payload: Mapping[str, Any]) -> ReplicationPlan:
             minimum=1,
             maximum=64,
         ),
-        require_distinct_dataset_semantic_sha256=_boolean(
-            independence_payload.get("require_distinct_dataset_semantic_sha256"),
-            "replication independence require_distinct_dataset_semantic_sha256",
+        minimum_distinct_dossier_signers=_integer(
+            independence_payload.get("minimum_distinct_dossier_signers"),
+            "replication independence minimum_distinct_dossier_signers",
+            minimum=1,
+            maximum=64,
+        ),
+        minimum_distinct_statistics_signers=_integer(
+            independence_payload.get("minimum_distinct_statistics_signers"),
+            "replication independence minimum_distinct_statistics_signers",
+            minimum=1,
+            maximum=64,
+        ),
+        require_disjoint_test_semantic_sha256=_boolean(
+            independence_payload.get("require_disjoint_test_semantic_sha256"),
+            "replication independence require_disjoint_test_semantic_sha256",
         ),
         require_distinct_matrix_sha256=_boolean(
             independence_payload.get("require_distinct_matrix_sha256"),
@@ -298,9 +320,9 @@ def parse_replication_plan(payload: Mapping[str, Any]) -> ReplicationPlan:
             independence_payload.get("require_distinct_quorum_envelope_sha256"),
             "replication independence require_distinct_quorum_envelope_sha256",
         ),
-        prohibit_phase6_source_report_reuse=_boolean(
-            independence_payload.get("prohibit_phase6_source_report_reuse"),
-            "replication independence prohibit_phase6_source_report_reuse",
+        prohibit_statistics_report_reuse=_boolean(
+            independence_payload.get("prohibit_statistics_report_reuse"),
+            "replication independence prohibit_statistics_report_reuse",
         ),
     )
 
@@ -341,11 +363,11 @@ def parse_replication_plan(payload: Mapping[str, Any]) -> ReplicationPlan:
         {
             "minimum_research_approved_fraction",
             "minimum_positive_replication_fraction",
+            "minimum_windows_per_replication",
             "maximum_failed_replications",
             "maximum_insufficient_replications",
             "minimum_worst_case_total_pnl_usd",
             "minimum_median_total_pnl_usd",
-            "require_all_reserved_holdouts_positive",
         },
     )
     acceptance = ReplicationAcceptancePolicy(
@@ -356,6 +378,12 @@ def parse_replication_plan(payload: Mapping[str, Any]) -> ReplicationPlan:
         minimum_positive_replication_fraction=_decimal_string(
             acceptance_payload.get("minimum_positive_replication_fraction"),
             "replication acceptance minimum_positive_replication_fraction",
+        ),
+        minimum_windows_per_replication=_integer(
+            acceptance_payload.get("minimum_windows_per_replication"),
+            "replication acceptance minimum_windows_per_replication",
+            minimum=1,
+            maximum=4096,
         ),
         maximum_failed_replications=_integer(
             acceptance_payload.get("maximum_failed_replications"),
@@ -376,10 +404,6 @@ def parse_replication_plan(payload: Mapping[str, Any]) -> ReplicationPlan:
         minimum_median_total_pnl_usd=_decimal_string(
             acceptance_payload.get("minimum_median_total_pnl_usd"),
             "replication acceptance minimum_median_total_pnl_usd",
-        ),
-        require_all_reserved_holdouts_positive=_boolean(
-            acceptance_payload.get("require_all_reserved_holdouts_positive"),
-            "replication acceptance require_all_reserved_holdouts_positive",
         ),
     )
 
@@ -441,8 +465,14 @@ def replication_plan_payload(plan: ReplicationPlan) -> dict[str, Any]:
             "minimum_distinct_quorum_signers": (
                 plan.independence.minimum_distinct_quorum_signers
             ),
-            "require_distinct_dataset_semantic_sha256": (
-                plan.independence.require_distinct_dataset_semantic_sha256
+            "minimum_distinct_dossier_signers": (
+                plan.independence.minimum_distinct_dossier_signers
+            ),
+            "minimum_distinct_statistics_signers": (
+                plan.independence.minimum_distinct_statistics_signers
+            ),
+            "require_disjoint_test_semantic_sha256": (
+                plan.independence.require_disjoint_test_semantic_sha256
             ),
             "require_distinct_matrix_sha256": (
                 plan.independence.require_distinct_matrix_sha256
@@ -453,8 +483,8 @@ def replication_plan_payload(plan: ReplicationPlan) -> dict[str, Any]:
             "require_distinct_quorum_envelope_sha256": (
                 plan.independence.require_distinct_quorum_envelope_sha256
             ),
-            "prohibit_phase6_source_report_reuse": (
-                plan.independence.prohibit_phase6_source_report_reuse
+            "prohibit_statistics_report_reuse": (
+                plan.independence.prohibit_statistics_report_reuse
             ),
         },
         "comparability": {
@@ -478,6 +508,9 @@ def replication_plan_payload(plan: ReplicationPlan) -> dict[str, Any]:
             "minimum_positive_replication_fraction": _decimal_text(
                 plan.acceptance.minimum_positive_replication_fraction
             ),
+            "minimum_windows_per_replication": (
+                plan.acceptance.minimum_windows_per_replication
+            ),
             "maximum_failed_replications": (
                 plan.acceptance.maximum_failed_replications
             ),
@@ -489,9 +522,6 @@ def replication_plan_payload(plan: ReplicationPlan) -> dict[str, Any]:
             ),
             "minimum_median_total_pnl_usd": _decimal_text(
                 plan.acceptance.minimum_median_total_pnl_usd
-            ),
-            "require_all_reserved_holdouts_positive": (
-                plan.acceptance.require_all_reserved_holdouts_positive
             ),
         },
         "authority": {
