@@ -23,11 +23,11 @@ def _write_plan(path: Path, *, reordered: bool = False) -> Path:
   automatic_promotion: false
   human_admit_required: true
 acceptance:
-  require_all_reserved_holdouts_positive: true
   minimum_median_total_pnl_usd: "0.00"
   minimum_worst_case_total_pnl_usd: "0.000"
   maximum_insufficient_replications: 0
   maximum_failed_replications: 1
+  minimum_windows_per_replication: 3
   minimum_positive_replication_fraction: "0.6700"
   minimum_research_approved_fraction: "0.670"
 comparability:
@@ -36,11 +36,13 @@ comparability:
   require_equal_package_version: true
   require_equal_code_revision: true
 independence:
-  prohibit_phase6_source_report_reuse: true
+  prohibit_statistics_report_reuse: true
   require_distinct_quorum_envelope_sha256: true
   require_distinct_dossier_sha256: true
   require_distinct_matrix_sha256: true
-  require_distinct_dataset_semantic_sha256: true
+  require_disjoint_test_semantic_sha256: true
+  minimum_distinct_statistics_signers: 2
+  minimum_distinct_dossier_signers: 2
   minimum_distinct_quorum_signers: 2
   minimum_replications: 3
 candidate:
@@ -58,11 +60,13 @@ candidate:
 independence:
   minimum_replications: 3
   minimum_distinct_quorum_signers: 2
-  require_distinct_dataset_semantic_sha256: true
+  minimum_distinct_dossier_signers: 2
+  minimum_distinct_statistics_signers: 2
+  require_disjoint_test_semantic_sha256: true
   require_distinct_matrix_sha256: true
   require_distinct_dossier_sha256: true
   require_distinct_quorum_envelope_sha256: true
-  prohibit_phase6_source_report_reuse: true
+  prohibit_statistics_report_reuse: true
 comparability:
   require_equal_code_revision: true
   require_equal_package_version: true
@@ -71,11 +75,11 @@ comparability:
 acceptance:
   minimum_research_approved_fraction: "0.67"
   minimum_positive_replication_fraction: "0.67"
+  minimum_windows_per_replication: 3
   maximum_failed_replications: 1
   maximum_insufficient_replications: 0
   minimum_worst_case_total_pnl_usd: "0"
   minimum_median_total_pnl_usd: "0"
-  require_all_reserved_holdouts_positive: true
 authority:
   human_admit_required: true
   automatic_promotion: false
@@ -103,6 +107,8 @@ def test_replication_plan_identity_is_semantic_and_non_authorizing(
     assert payload["scope"] == "independent_offline_replication"
     assert payload["candidate"]["candidate_id"] == _CANDIDATE_ID
     assert payload["acceptance"]["minimum_research_approved_fraction"] == "0.67"
+    assert payload["independence"]["require_disjoint_test_semantic_sha256"]
+    assert payload["independence"]["minimum_distinct_statistics_signers"] == 2
     assert payload["authority"] == {
         "human_admit_required": True,
         "automatic_promotion": False,
@@ -169,16 +175,32 @@ def test_material_threshold_change_changes_replication_plan_identity(
             "minimum_distinct_quorum_signers: 4",
         ),
         (
+            "minimum_distinct_dossier_signers: 2",
+            "minimum_distinct_dossier_signers: 4",
+        ),
+        (
+            "minimum_distinct_statistics_signers: 2",
+            "minimum_distinct_statistics_signers: 4",
+        ),
+        (
+            "minimum_windows_per_replication: 3",
+            "minimum_windows_per_replication: false",
+        ),
+        (
+            "require_disjoint_test_semantic_sha256: true",
+            "require_disjoint_test_semantic_sha256: false",
+        ),
+        (
             "require_distinct_matrix_sha256: true",
             "require_distinct_matrix_sha256: false",
         ),
         (
-            "require_equal_code_revision: true",
-            "require_equal_code_revision: false",
+            "prohibit_statistics_report_reuse: true",
+            "prohibit_statistics_report_reuse: false",
         ),
         (
-            "require_all_reserved_holdouts_positive: true",
-            "require_all_reserved_holdouts_positive: false",
+            "require_equal_code_revision: true",
+            "require_equal_code_revision: false",
         ),
         ("human_admit_required: true", "human_admit_required: false"),
         ("automatic_promotion: false", "automatic_promotion: true"),
