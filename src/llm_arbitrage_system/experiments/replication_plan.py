@@ -544,7 +544,7 @@ def _integer(value: Any, name: str, *, minimum: int, maximum: int) -> int:
         raise ValueError(f"{name} must be an integer")
     if not minimum <= value <= maximum:
         raise ValueError(f"{name} must be in [{minimum}, {maximum}]")
-    return value
+    return int(value)
 
 
 def _decimal_string(value: Any, name: str) -> Decimal:
