@@ -3,55 +3,55 @@
     {
       "cohort_id": "cohort-000000000000000000000001",
       "dossier": {
-        "attestation": "../../.phase9-runs/cohort-1/dossier.attestation.json",
-        "evidence": "../../.phase9-runs/cohort-1/dossier.json",
-        "trusted_public_key": "../../.phase9-runs/trust/dossier-a.public.json"
+        "attestation": ".phase9-runs/cohort-1/dossier.attestation.json",
+        "evidence": ".phase9-runs/cohort-1/dossier.json",
+        "trusted_public_key": ".phase9-runs/trust/dossier-a.public.json"
       },
       "quorum": {
-        "attestation": "../../.phase9-runs/cohort-1/quorum.attestation.json",
-        "evidence": "../../.phase9-runs/cohort-1/quorum.json",
-        "trusted_public_key": "../../.phase9-runs/trust/quorum-a.public.json"
+        "attestation": ".phase9-runs/cohort-1/quorum.attestation.json",
+        "evidence": ".phase9-runs/cohort-1/quorum.json",
+        "trusted_public_key": ".phase9-runs/trust/quorum-a.public.json"
       },
       "statistics": {
-        "attestation": "../../.phase9-runs/cohort-1/statistics.attestation.json",
-        "evidence": "../../.phase9-runs/cohort-1/statistics.json",
-        "trusted_public_key": "../../.phase9-runs/trust/statistics-a.public.json"
+        "attestation": ".phase9-runs/cohort-1/statistics.attestation.json",
+        "evidence": ".phase9-runs/cohort-1/statistics.json",
+        "trusted_public_key": ".phase9-runs/trust/statistics-a.public.json"
       }
     },
     {
       "cohort_id": "cohort-000000000000000000000002",
       "dossier": {
-        "attestation": "../../.phase9-runs/cohort-2/dossier.attestation.json",
-        "evidence": "../../.phase9-runs/cohort-2/dossier.json",
-        "trusted_public_key": "../../.phase9-runs/trust/dossier-b.public.json"
+        "attestation": ".phase9-runs/cohort-2/dossier.attestation.json",
+        "evidence": ".phase9-runs/cohort-2/dossier.json",
+        "trusted_public_key": ".phase9-runs/trust/dossier-b.public.json"
       },
       "quorum": {
-        "attestation": "../../.phase9-runs/cohort-2/quorum.attestation.json",
-        "evidence": "../../.phase9-runs/cohort-2/quorum.json",
-        "trusted_public_key": "../../.phase9-runs/trust/quorum-b.public.json"
+        "attestation": ".phase9-runs/cohort-2/quorum.attestation.json",
+        "evidence": ".phase9-runs/cohort-2/quorum.json",
+        "trusted_public_key": ".phase9-runs/trust/quorum-b.public.json"
       },
       "statistics": {
-        "attestation": "../../.phase9-runs/cohort-2/statistics.attestation.json",
-        "evidence": "../../.phase9-runs/cohort-2/statistics.json",
-        "trusted_public_key": "../../.phase9-runs/trust/statistics-b.public.json"
+        "attestation": ".phase9-runs/cohort-2/statistics.attestation.json",
+        "evidence": ".phase9-runs/cohort-2/statistics.json",
+        "trusted_public_key": ".phase9-runs/trust/statistics-b.public.json"
       }
     },
     {
       "cohort_id": "cohort-000000000000000000000003",
       "dossier": {
-        "attestation": "../../.phase9-runs/cohort-3/dossier.attestation.json",
-        "evidence": "../../.phase9-runs/cohort-3/dossier.json",
-        "trusted_public_key": "../../.phase9-runs/trust/dossier-a.public.json"
+        "attestation": ".phase9-runs/cohort-3/dossier.attestation.json",
+        "evidence": ".phase9-runs/cohort-3/dossier.json",
+        "trusted_public_key": ".phase9-runs/trust/dossier-a.public.json"
       },
       "quorum": {
-        "attestation": "../../.phase9-runs/cohort-3/quorum.attestation.json",
-        "evidence": "../../.phase9-runs/cohort-3/quorum.json",
-        "trusted_public_key": "../../.phase9-runs/trust/quorum-a.public.json"
+        "attestation": ".phase9-runs/cohort-3/quorum.attestation.json",
+        "evidence": ".phase9-runs/cohort-3/quorum.json",
+        "trusted_public_key": ".phase9-runs/trust/quorum-a.public.json"
       },
       "statistics": {
-        "attestation": "../../.phase9-runs/cohort-3/statistics.attestation.json",
-        "evidence": "../../.phase9-runs/cohort-3/statistics.json",
-        "trusted_public_key": "../../.phase9-runs/trust/statistics-a.public.json"
+        "attestation": ".phase9-runs/cohort-3/statistics.attestation.json",
+        "evidence": ".phase9-runs/cohort-3/statistics.json",
+        "trusted_public_key": ".phase9-runs/trust/statistics-a.public.json"
       }
     }
   ],
