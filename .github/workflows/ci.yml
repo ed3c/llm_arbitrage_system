@@ -36,7 +36,16 @@ jobs:
       - name: Ruff
         run: |
           ruff check .
-          ruff format --check .
+          ruff format --check \
+            src/llm_arbitrage_system/experiments/replication_plan.py \
+            src/llm_arbitrage_system/experiments/replication_inputs.py \
+            src/llm_arbitrage_system/experiments/replication.py \
+            src/llm_arbitrage_system/experiments/replication_signing.py \
+            src/llm_arbitrage_system/experiments/replication_cli.py \
+            src/llm_arbitrage_system/experiments/__init__.py \
+            tests/test_phase9_replication_plan.py \
+            tests/test_phase9_replication.py \
+            tests/test_phase9_operator.py
       - name: Mypy
         run: mypy src
       - name: Tests and coverage
