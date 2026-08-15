@@ -6,11 +6,13 @@ candidate:
 independence:
   minimum_replications: 3
   minimum_distinct_quorum_signers: 2
-  require_distinct_dataset_semantic_sha256: true
+  minimum_distinct_dossier_signers: 2
+  minimum_distinct_statistics_signers: 2
+  require_disjoint_test_semantic_sha256: true
   require_distinct_matrix_sha256: true
   require_distinct_dossier_sha256: true
   require_distinct_quorum_envelope_sha256: true
-  prohibit_phase6_source_report_reuse: true
+  prohibit_statistics_report_reuse: true
 comparability:
   require_equal_code_revision: true
   require_equal_package_version: true
@@ -19,11 +21,11 @@ comparability:
 acceptance:
   minimum_research_approved_fraction: "0.67"
   minimum_positive_replication_fraction: "0.67"
+  minimum_windows_per_replication: 3
   maximum_failed_replications: 1
   maximum_insufficient_replications: 0
   minimum_worst_case_total_pnl_usd: "0"
   minimum_median_total_pnl_usd: "0"
-  require_all_reserved_holdouts_positive: true
 authority:
   human_admit_required: true
   automatic_promotion: false
