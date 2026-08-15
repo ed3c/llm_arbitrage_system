@@ -12,8 +12,8 @@ from llm_arbitrage_system.experiments.replication import (
     ReplicationCohortEvidence,
     ReplicationReport,
 )
+from llm_arbitrage_system.experiments.replication_cli import build_parser
 from llm_arbitrage_system.experiments.replication_cli import (
-    build_parser,
     main as replication_main,
 )
 from llm_arbitrage_system.experiments.replication_signing import (
