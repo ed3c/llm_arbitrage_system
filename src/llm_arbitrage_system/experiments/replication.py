@@ -271,8 +271,11 @@ def build_replication_report(
             ),
         }
     )
-    if not _checks_pass(independence_checks) or not _checks_pass(
-        comparability_checks
+    if (
+        not _checks_pass(independence_checks)
+        or not _checks_pass(comparability_checks)
+        or insufficient_replication_count
+        > acceptance.maximum_insufficient_replications
     ):
         status = "replication_insufficient"
     elif _checks_pass(acceptance_checks):
