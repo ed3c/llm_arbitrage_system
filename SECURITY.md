@@ -1,31 +1,56 @@
-# Security policy
+<!-- i18n-key: SECURITY; locale: en; reviewed: 2026-08-15 -->
+[English](SECURITY.md) · [繁體中文](SECURITY.zh-TW.md)
 
-## Supported scope
+# Security Policy
 
-The repository is an offline paper-research, replay, and evidence harness. It contains no exchange credentials, wallet signer, withdrawal path, external order endpoint, or live-mode branch.
+## Supported versions
 
-## Secrets
+LLM Arbitrage System is pre-1.0 research or alpha software. Security fixes are applied to the latest `main` branch and, when explicitly published, the latest release. Older commits, forks, experimental branches, fixtures, and archived evidence are not supported unless a maintainer states otherwise.
 
-Never commit `.env`, exchange API secrets, wallet keys, seed phrases, account identifiers, exported sessions, or provenance private keys. Fixtures use synthetic values only.
+## Reporting a vulnerability
 
-Phase 4 provenance keys are local signing keys, not trading credentials. They still authenticate evidence and must be protected:
+Do **not** open a public Issue with exploit details, credentials, private data, or a working proof of concept.
 
-- generate private keys outside the repository and evidence bundles
-- retain file mode `0600`
-- never print private-key bytes or embed them in attestations, SQLite, logs, issues, or CI artifacts
-- rotate a compromised key by trusting a new public key; immutable historical rows are not rewritten
+Use GitHub's private vulnerability reporting page:
 
-## Operational controls
+```text
+https://github.com/ed3c/llm_arbitrage_system/security/advisories/new
+```
 
-- Treat order acknowledgements as non-terminal until a simulated fill or rejection is recorded.
-- A failed compensation leaves residual exposure and halts new entries.
-- Bundle, attestation, lineage, matrix, or registry mismatches fail closed.
-- Registry imports require a trusted key unless an explicit untrusted override is supplied.
+When private reporting is unavailable, open a public Issue titled `Security contact request` containing no vulnerability details. A maintainer will establish a private channel.
 
-## Evidence limits
+Include:
 
-Checksums prove byte consistency. Ed25519 signatures prove possession of one provenance private key. Neither proves market-data truth, legal identity, realized profitability, or future performance.
+- affected version, commit, component, and configuration;
+- realistic impact and required preconditions;
+- minimal reproduction or evidence bundle with secrets removed;
+- whether the issue crosses a permission, identity, provenance, sandbox, approval, network, data, or release boundary;
+- suggested mitigation, when known.
 
-## Reporting
+## Security scope
 
-Report security defects privately to the repository owner with the affected commit and a minimal synthetic reproduction. Do not include real credentials or private keys.
+Security reports include unintended network or live-trading connectivity, approval or risk-gate bypass, replay-journal corruption, experiment or lineage substitution, signature/key confusion, unsafe archive or path handling, command injection, secret exposure, and any output that could falsely appear to authorize a financial action.
+
+The following are always security-sensitive:
+
+- command construction and subprocess boundaries;
+- path normalization, symlink handling, archive extraction, and workspace ownership;
+- credential, token, model-provider, network, and egress handling;
+- immutable identity, digests, signatures, approvals, replay, and lineage;
+- output, time, retry, memory, artifact, and cost budgets;
+- release workflows, dependency provenance, and generated evidence;
+- any claim that could cause a user to grant more authority than the implementation provides.
+
+## Disclosure and remediation
+
+Maintainers will validate the report, establish the affected boundary, and coordinate a fix and disclosure. Do not publish details before a remediation or an agreed disclosure date.
+
+A fix must include regression coverage and must not silently weaken a fail-closed control. Security advisories describe observed scope and limitations; they do not imply that unrelated configurations are safe.
+
+## Safe research
+
+Good-faith research that avoids privacy violations, service disruption, data destruction, persistence, credential access, and third-party targeting is welcome. Stop testing and report immediately if real secrets or private data become accessible.
+
+## Secrets and private data
+
+Never commit or attach live secrets. Revoke exposed credentials rather than relying on deletion. Public Git history, Actions logs, caches, artifacts, package registries, and external model providers must all be treated as disclosure surfaces.
